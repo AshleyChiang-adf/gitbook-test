@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TS-60629 載具需求分析與提案</title>
+<style>
+  :root{
+    --ink:#1a2332; --muted:#5b6878; --line:#d9dfe7; --bg:#f4f6f9; --card:#ffffff;
+    --accent:#0b5fa5; --accent-soft:#e8f1fa; --gold:#b07d1e; --gold-soft:#fdf6e7;
+    --ok:#1d7a4f; --ok-soft:#e6f4ec; --warn:#b3541e; --warn-soft:#fbeee6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+       background:var(--bg); color:var(--ink); line-height:1.7; padding:24px 16px 64px;}
+  .wrap{max-width:1080px; margin:0 auto;}
+  header.hero{background:linear-gradient(135deg,#0b3c6e,#0b5fa5); color:#fff;
+       border-radius:14px; padding:32px 36px; margin-bottom:20px;}
+  header.hero h1{font-size:1.7rem; letter-spacing:.5px;}
+  header.hero .sub{opacity:.85; margin-top:6px; font-size:.95rem;}
+  header.hero .refs{margin-top:14px; font-size:.83rem; opacity:.8;}
+  header.hero .refs li{margin-left:1.2em;}
+
+  /* 廣→細 stepper */
+  .stepper{display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 26px;}
+  .stepper a{flex:1 1 120px; text-align:center; text-decoration:none; color:var(--accent);
+       background:var(--card); border:1px solid var(--line); border-radius:10px;
+       padding:10px 6px; font-size:.85rem; transition:.15s;}
+  .stepper a:hover{background:var(--accent-soft);}
+  .stepper a .n{display:block; font-size:1.1rem; font-weight:700;}
+  .stepper .arrow{align-self:center; color:var(--muted); flex:0;}
+
+  section{background:var(--card); border:1px solid var(--line); border-radius:14px;
+       padding:26px 30px; margin-bottom:22px;}
+  h2{font-size:1.25rem; color:var(--accent); border-left:5px solid var(--accent);
+     padding-left:12px; margin-bottom:14px;}
+  h3{font-size:1.02rem; margin:20px 0 8px; color:var(--ink);}
+  p{margin-bottom:10px;}
+  .lede{font-size:1.0rem;}
+  .callout{border-radius:10px; padding:14px 18px; margin:14px 0; font-size:.95rem;}
+  .callout.key{background:var(--gold-soft); border:1px solid #e7cf9a;}
+  .callout.ok{background:var(--ok-soft); border:1px solid #bfe0cd;}
+  .callout.warn{background:var(--warn-soft); border:1px solid #ecc9b0;}
+  .callout b{color:var(--ink);}
+
+  table{width:100%; border-collapse:collapse; font-size:.88rem; margin:10px 0 6px;}
+  th{background:var(--accent-soft); color:var(--ink); text-align:left;
+     padding:8px 10px; border:1px solid var(--line); white-space:nowrap;}
+  td{padding:7px 10px; border:1px solid var(--line); vertical-align:top;}
+  tr:nth-child(even) td{background:#fafbfd;}
+  td.num, th.num{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  tr.total td{background:var(--accent-soft); font-weight:700;}
+  tr.grand td{background:#0b5fa5; color:#fff; font-weight:700;}
+  tr.margin td{background:var(--ok-soft); font-weight:700; color:var(--ok);}
+  .tag{display:inline-block; padding:1px 8px; border-radius:20px; font-size:.75rem; font-weight:700;}
+  .tag.star{background:var(--gold-soft); color:var(--gold); border:1px solid #e0c286;}
+  .tag.p200{background:#eee6fb; color:#6b3fa0; border:1px solid #d3c2ee;}
+  .tag.idle{background:#eef1f5; color:var(--muted); border:1px solid var(--line);}
+  .tag.rec{background:var(--ok-soft); color:var(--ok); border:1px solid #a9d8bd;}
+  .tag.bak{background:var(--accent-soft); color:var(--accent); border:1px solid #b9d4ec;}
+  .tag.no{background:var(--warn-soft); color:var(--warn); border:1px solid #e5c0a5;}
+
+  .cols{display:flex; gap:20px; flex-wrap:wrap;}
+  .cols > div{flex:1 1 340px;}
+  figure{margin:14px 0; text-align:center;}
+  figure svg{max-width:100%; height:auto;}
+  figcaption{font-size:.8rem; color:var(--muted); margin-top:6px;}
+  .small{font-size:.8rem; color:var(--muted);}
+  .rid{font-weight:700; color:var(--accent); white-space:nowrap;}
+  td a{color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent);}
+  td a:hover{background:var(--accent-soft);}
+  .src{font-size:.72rem; color:var(--muted); font-weight:400;}
+  footer{color:var(--muted); font-size:.82rem; text-align:center; margin-top:8px;}
+  @media print{ body{background:#fff; padding:0;} section{border:none; page-break-inside:avoid;} .stepper{display:none;} }
+
+
+  /* 讀數面板 / 滑桿列(參考 install2 sim 慣例) */
+  .metrics{margin-top:10px; background:#f7f9fb; border:1px solid var(--line); border-radius:9px; padding:8px 12px;}
+  .metrics .m{display:flex; justify-content:space-between; align-items:center;
+       font-size:.84rem; padding:3px 0; border-bottom:1px solid #eef1f4;}
+  .metrics .m:last-child{border-bottom:0;}
+  .metrics .m span{color:var(--muted);}
+  .metrics .m b{font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink);}
+  .metrics .v.ok{color:#22a06b;} .metrics .v.warn{color:#e0a200;} .metrics .v.err{color:#e5484d;}
+  .rw{display:inline-flex; align-items:center; gap:8px; font-size:.83rem; color:var(--muted);}
+  .rw input[type=range]{width:130px; height:4px; accent-color:var(--accent);}
+  .rw .rwv{font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); min-width:4.2em;}
+
+  /* ── 數位系統流程步驟 ── */
+  .flow{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;}
+  .flow .st{flex:1 1 165px; background:#fafbfd; border:1px solid var(--line);
+       border-radius:10px; padding:12px 14px; position:relative;}
+  .flow .st b{display:block; color:var(--accent); font-size:.92rem; margin-bottom:4px;}
+  .flow .st .n{position:absolute; top:-9px; left:12px; background:var(--accent); color:#fff;
+       width:20px; height:20px; border-radius:50%; font-size:.72rem; font-weight:700;
+       display:flex; align-items:center; justify-content:center;}
+  .flow .st p{font-size:.82rem; color:var(--muted); margin:0;}
+  .flow.g .st b{color:var(--ok);} .flow.g .st .n{background:var(--ok);}
+  .pid{font-weight:700; color:#c0392b; white-space:nowrap;}
+  .sid{font-weight:700; color:var(--ok); white-space:nowrap;}
+
+  /* ── 互動效果模擬(③)── */
+  .simintro{font-size:.93rem; margin-bottom:6px;}
+  .tabs{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+  .tab{flex:1 1 128px; border:1px solid var(--line); background:#fafbfd; border-radius:10px;
+       padding:9px 8px; cursor:pointer; text-align:center; font-size:.86rem; user-select:none; transition:.15s;}
+  .tab .n{display:block; font-size:1.1rem; font-weight:700; color:var(--accent);}
+  .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .tab.active .n{color:#fff;}
+  .tab .p2{font-size:.64rem; color:#6b3fa0; background:#eee6fb; border-radius:20px; padding:0 6px; margin-left:3px;}
+  .tab.active .p2{color:#fff; background:rgba(255,255,255,.25);}
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0 14px;}
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:#fff;}
+  .seg button{border:0; background:transparent; padding:8px 15px; cursor:pointer; font-size:.86rem; color:var(--muted);}
+  .seg button.on{background:var(--accent); color:#fff;}
+  .btn{border:1px solid var(--line); background:#fff; border-radius:9px; padding:8px 15px; cursor:pointer; font-size:.86rem;}
+  .btn.primary{background:var(--ok); color:#fff; border-color:var(--ok);}
+  .spd{display:inline-flex; gap:5px; align-items:center; font-size:.83rem; color:var(--muted);}
+  .spd select{padding:6px 8px; border-radius:8px; border:1px solid var(--line);}
+  .stage{display:grid; grid-template-columns:1.1fr .9fr; gap:16px;}
+  @media(max-width:820px){ .stage{grid-template-columns:1fr;} }
+  .panel{background:#fafbfd; border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .panel h4{font-size:.95rem; margin:0 0 8px; color:var(--accent); display:flex; justify-content:space-between; align-items:center;}
+  .panel h4 .badge{font-size:.72rem; color:var(--muted); font-weight:400;}
+  canvas{width:100%; display:block; border-radius:10px;}
+  #room{background:#fafbfd; aspect-ratio:1/1;}
+  #monitor{background:#0b1220; aspect-ratio:16/9;}
+  .simphase{margin-top:10px; background:var(--accent-soft); border-radius:8px; padding:8px 12px; font-size:.9rem;}
+  .simphase b{color:var(--accent);}
+  .clockbar{height:6px; background:#e6eaf0; border-radius:4px; margin-top:8px; overflow:hidden;}
+  .clockbar i{display:block; height:100%; background:var(--gold); width:0;}
+  .simdesc{margin-top:16px;}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; font-size:.8rem; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:12px; height:12px; border-radius:50%; display:inline-block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>TS-60629 遠程無人 Demo Room — 載具需求分析與提案</h1>
+  <div class="sub">從廣到細:問題定義 → Demo 項目 → 效果模擬(2D/3D)→ 技術方案 → 需求規格 → 提案設計 → BOM → 最終 BOM</div>
+  <div class="refs">依據文件:
+    <ul>
+      <li>TS-60629 遠程無人 Demo Room 規劃 - Demo 的項目 26-0703.docx(CC Pro 100,5 項)</li>
+      <li>TS-60629 遠程無人 Demo Room 規劃 - Demo 的項目 26-0703 2.docx(CC Pro 200,6 項)</li>
+      <li>遠程無人DemoRoom_規劃.xlsx(總體架構/接線/預算框)</li>
+    </ul>
+    2026-07-20 · v1.0
+  </div>
+</header>
+
+<nav class="stepper">
+  <a href="#s1"><span class="n">①</span>問題定義</a><span class="arrow">→</span>
+  <a href="#s2"><span class="n">②</span>Demo 項目</a><span class="arrow">→</span>
+  <a href="#s3"><span class="n">③</span>效果模擬</a><span class="arrow">→</span>
+  <a href="#s4"><span class="n">④</span>技術方案</a><span class="arrow">→</span>
+  <a href="#s5"><span class="n">⑤</span>需求規格</a><span class="arrow">→</span>
+  <a href="#s6"><span class="n">⑥</span>提案設計</a><span class="arrow">→</span>
+  <a href="#s7"><span class="n">⑦</span>BOM+備品</a><span class="arrow">→</span>
+  <a href="#s8"><span class="n">⑧</span>最終 BOM</a><span class="arrow">→</span>
+  <a href="#s9"><span class="n">⑨</span>數位系統</a>
+</nav>
+
+<!-- ① 問題定義 -->
+<section id="s1">
+  <h2>① 問題定義(最廣)</h2>
+  <p class="lede"><b>核心問題:</b>Demo Room 平常<b>無人</b>,遠端業務要向遠端客戶完整展示
+     CC Pro 100 / CC Pro 200 聲音追蹤攝影機的六大產品效果:
+     聲音觸發切換、對話模式 PBP、Zone Mode 抗干擾、講者走動跟蹤、噪音抗干擾、無人回 Home。</p>
+  <p><b>核心理念:</b>不假造畫面——給相機<b>真實的聲音與真實的人形</b>(真人聲喇叭 + 真人比例 3D 人偶),
+     讓 CC Pro 自己做出真實反應,把產品效果原汁原味展示給客戶。</p>
+  <table>
+    <tr><th style="width:9em">關鍵限制</th><th>內容</th></tr>
+    <tr><td>無人自動化</td><td>房間無人,一切由中控(ESP32-P4)依 scenes.json 時間軸自動編排</td></tr>
+    <tr><td>可遠端操作</td><td>業務用瀏覽器一鍵觸發;客戶只看視訊會議畫面,零安裝</td></tr>
+    <tr><td>可重複、每次一致</td><td>可重播、軌跡/時序每次相同,演示品質不靠運氣</td></tr>
+    <tr><td>成本低</td><td>固定式 ≤ NT$10,000;<b>載具 ≤ NT$40,000</b></td></tr>
+  </table>
+  <div class="callout key">
+    <b>載具要解的子問題:</b>七個情境中,六個可用「固定 5 聲源 + <b>4 個 3D 人偶</b>」完成,
+    唯獨<b>「講者走動跟蹤」需要一個會移動的講者 T</b>——
+    視覺(人形)與聲音(嘴高人聲)必須<b>一起移動</b>,相機才會真的追。這就是載具存在的理由。
+  </div>
+</section>
+
+<!-- ② Demo 項目 -->
+<section id="s2">
+  <h2>② Demo 項目與載具角色</h2>
+  <p>原始文件:CC Pro 100 為 5 項;CC Pro 200 多「無人位置雜音抗干擾」共 6 項。
+  本案再補一項 <b>7 起立坐下(免 Preset 動態取景)</b> 作為 200 的差異化賣點,共 <b>7 個情境</b>。
+  <b>同一台載具同時滿足兩產品</b>。</p>
+  <table>
+    <tr><th>#</th><th>Demo 情境</th><th>功能</th><th>Demo 動作</th><th>載具 T 角色</th></tr>
+    <tr><td>1</td><td>單人發聲</td><td>聲音觸發</td><td>A、B、C 輪流發聲,畫面依序切到該座位的 Preset</td><td><span class="tag idle">在場·未發聲</span></td></tr>
+    <tr><td>2</td><td>多人對話(2~4人)</td><td>對話模式 PBP</td><td>依序來回對話(<b>同時只有一人發聲</b>);來回觸發累積達標才進 PBP 2/3/4 分割</td><td><span class="tag rec">4-way 時為成員</span></td></tr>
+    <tr><td>3</td><td>Zone Mode 抗干擾</td><td>Zone Mode</td><td>只開 A 的 Zone;P4(B)、P6(D) <b>依序</b>在 Zone 外觸發 → 畫面不動</td><td><span class="tag idle">在場·未發聲</span></td></tr>
+    <tr><td>4</td><td>講者走動跟蹤</td><td>講者跟蹤</td><td><b>T 持續講話,沿 Zone A 彎曲路徑來回;中途停講 3 秒仍持續跟蹤</b></td><td><span class="tag star">★ 主角</span></td></tr>
+    <tr><td>5</td><td>無人發言</td><td>Back to Home</td><td>靜默超過 15 秒,自動回廣角全景</td><td><span class="tag idle">在場·靜默零底噪</span></td></tr>
+    <tr><td>6</td><td>無人位置雜音抗干擾 <span class="tag p200">Pro 200</span></td><td>BC200 判人聲</td><td>無人位置(<b>刻意不放人偶</b>)製造有感噪音,相機不受干擾</td><td><span class="tag idle">在場·斷電</span></td></tr>
+    <tr><td>7</td><td>起立坐下都追得到 <span class="tag p200">Pro 200</span></td><td>AI 動態取景(免 Preset)</td><td>A 坐著發言 → 起立 → 再坐下,<b>全程不切任何 Preset</b>;鏡頭俯仰+變焦重新取景</td><td><span class="tag idle">在場·未發聲</span></td></tr>
+  </table>
+  <div class="callout warn">
+    <b>容易忽略的洞察:載具「不發聲時」和「移動時」一樣重要。</b>
+    載具 T 就是 Lecturer T 本人,<b>一開始就在 Zone A 前方就位</b>(不是縮在角落待命)——因為它在情境 2 的 4-way PBP 裡是正式成員。
+    但在其餘情境它必須<b>在場卻完全不被誤觸</b>:<b>馬達驅動斷電</b>(非僅 PWM=0)、<b>擴大機 mute</b>、零待機底噪。
+    否則情境 5 的 15 秒靜默偵測會失效,情境 6 的噪音判定也會被自身雜音污染。
+  </div>
+</section>
+
+<!-- ③ 互動效果模擬 -->
+<section id="s3">
+  <h2>③ 互動效果模擬(2D / 3D)</h2>
+  <p class="simintro"><b>可播放的模擬</b>:左邊房間實況(誰在發聲、載具走位、<b>聲音點</b>),右邊 <b>CC Pro 輸出給客戶看的畫面</b>,下方是<b>即時運算的讀數</b>。
+  切機型看 100 / 200 的差異,點情境頁籤 → 播放。讓機構、韌體、業務對齊同一畫面。</p>
+
+  <div class="toolbar">
+    <div class="seg" id="modelSeg">
+      <button data-m="100" class="on">CC Pro 100</button>
+      <button data-m="200">CC Pro 200</button>
+    </div>
+    <span class="small" id="modelNote">5 個 Demo 情境</span>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="toolbar">
+    <div class="seg" id="viewSeg">
+      <button data-v="2d" class="on">2D 俯視</button>
+      <button data-v="3d">3D 立體</button>
+    </div>
+    <button class="btn primary" id="playBtn">▶ 播放</button>
+    <button class="btn" id="restartBtn">⟲ 重播</button>
+    <div class="spd">速度
+      <select id="spd"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+    </div>
+    <div class="rw">
+      <label>喇叭實際高度</label>
+      <input type="range" id="spkH" min="1.0" max="1.8" step="0.05" value="1.5">
+      <span class="rwv" id="spkHv">1.50 m</span>
+    </div>
+  </div>
+  <p class="small" style="margin:-6px 0 12px">聲音點 = 麥克風陣列射線打到「系統假設人聲平面 1.5m」的交點,<b>由座標即時算出</b>。
+  拉動喇叭高度就會看到聲音點漂移 —— 這就是 R4 要求喇叭必須裝在嘴高 1.5m 的原因。</p>
+  <p class="small" style="margin:-6px 0 12px"><b>相機配置</b>:節目相機 4 支(前方 3 + 後方左下 1),<b>幾個人上畫面就有幾支同時取像</b>(PBP 4-way = 4 支全開)。
+  前方採<b>對角取像</b>——左邊 TR41-1 打右半邊的 B、右邊 TR41-3 打左半邊的 A,斜角才拍得到最佳臉部角度(正上方直射會變成陡俯角);
+  後方左下 TR41-4 打前方講者 T;<b>R31 BTS 於後方中央常開全場概覽</b>,讓人隨時理解現況。</p>
+
+  <div class="stage">
+    <div class="panel">
+      <h4>房間實況 <span class="badge" id="viewBadge">2D 俯視</span></h4>
+      <canvas id="room" width="720" height="720"></canvas>
+      <div class="simphase" id="phase"><b>—</b></div>
+      <div class="clockbar"><i id="clock"></i></div>
+      <div class="legend" style="margin-top:8px">
+        <span><i class="dot" style="background:#f6993f"></i>麥克風</span>
+        <span><i class="dot" style="background:#e5484d"></i>聲音點</span>
+        <span><i class="dot" style="background:#22a06b"></i>真人位置</span>
+        <span><i class="dot" style="background:#0b5fa5"></i>載具 T</span>
+        <span><i style="display:inline-block;width:13px;height:10px;border:1px dashed #6e8cc8;background:rgba(31,79,216,.04)"></i>可劃 Zone(未啟用)</span>
+        <span><i style="display:inline-block;width:13px;height:10px;border:2px solid #c08a1e;background:rgba(201,138,30,.28)"></i>Zone 啟用中</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h4>CC Pro 輸出畫面 <span class="badge">客戶在視訊會議看到</span></h4>
+      <canvas id="monitor" width="640" height="360"></canvas>
+      <div class="metrics">
+        <div class="m"><span>目前 Preset</span><b id="mPreset">—</b></div>
+        <div class="m"><span>聲音點座標</span><b id="mSP">—</b></div>
+        <div class="m"><span>定位偏差(vs 真人)</span><b id="mDrift" class="v">—</b></div>
+        <div class="m"><span>BC200 判定</span><b id="mJudge" class="v">—</b></div>
+        <div class="m"><span>追蹤狀態</span><b id="mTrack">—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="simdesc">
+    <table>
+      <tr><th style="width:3em">#</th><th style="width:9em">情境</th><th style="width:8em">功能</th><th>Demo 動作(房間裡發生什麼)</th><th>客戶看到的效果</th></tr>
+      <tbody id="descBody"></tbody>
+    </table>
+    <p class="small" style="margin-top:8px">配置對照:<b>7 個桌上位置各有貼身小 Zone(P1~P7)</b>——A(P2)為 Zone Mode 鎖定位、B(P4)/D(P6)為插話位、<b>C(P7)為桌首主席</b>;
+    噪音位 P5 <b>刻意不放人偶</b>(供 CC Pro 200 演示);載具 T 於 Zone A 沿白色循線走動;Ceiling MIC×2 於中央桌。</p>
+  </div>
+</section>
+
+<!-- ④ 技術方案 -->
+<section id="s4">
+  <h2>④ 技術方案:走動的講者 T 可以怎麼做?</h2>
+  <p>「講者走動跟蹤」的本質 = 讓 <b>人形(視覺)+ 人聲(聲音)同步移動</b>。五種可能作法評比:</p>
+  <table>
+    <tr><th>方案</th><th>作法</th><th>視覺+聲音同動</th><th>重複性</th><th>成本</th><th>施工</th><th>評估</th></tr>
+    <tr>
+      <td><b>A. 循線差速載具</b></td>
+      <td>2 輪差速底盤 + 5 路循跡模組循<b>白色線</b>,載 1.7m 3D 人偶 + 1.5m 嘴高喇叭,前進/倒退往返;固定路徑可拖長電源線,核心沿用廠內板子</td>
+      <td>✅ 完整</td><td>✅ 循線±5cm</td><td>~1.3 萬</td><td>貼白線即可</td>
+      <td><span class="tag rec">✔ 推薦</span></td>
+    </tr>
+    <tr>
+      <td><b>B. 走道 3 喇叭 crossfade</b></td>
+      <td>走道 3 顆固定喇叭做聲音淡入淡出,模擬聲源移動(無移動人形)</td>
+      <td>⚠️ 只有聲音移動,人偶不動,追蹤畫面說服力弱</td><td>✅</td><td>~0.3 萬</td><td>佈線</td>
+      <td><span class="tag bak">備援</span></td>
+    </tr>
+    <tr>
+      <td>C. 天花板/地面線性滑軌</td>
+      <td>滑台拖動人偶+喇叭,最平順</td>
+      <td>✅ 完整</td><td>✅ 最佳</td><td>3m 行程滑軌+馬達遠超 4 萬,還要天花板工程</td><td>重工程</td>
+      <td><span class="tag no">✘ 超預算</span></td>
+    </tr>
+    <tr>
+      <td>D. 商用 AGV / 掃地機改裝</td>
+      <td>現成底盤改裝上立柱</td>
+      <td>✅</td><td>⚠️ 路徑 API 受限</td><td>載重 15kg 級 AGV 超 4 萬;掃地機載不動 1.7m 3D 人偶</td><td>低</td>
+      <td><span class="tag no">✘ 不合身</span></td>
+    </tr>
+    <tr>
+      <td>E. 全向(麥克納姆)底盤</td>
+      <td>橫移不需倒退,姿態更自由</td>
+      <td>✅</td><td>⚠️ 輪滑差需校正</td><td>+0.6~1 萬</td><td>同 A</td>
+      <td><span class="tag bak">餘裕升級項</span></td>
+    </tr>
+  </table>
+  <div class="callout ok">
+    <b>結論:A(循線差速載具)為主、B(crossfade)為備援</b>——即規劃書的「雙保險」:
+    載具故障或 WiFi 離線時,中控自動切走道 crossfade 腳本,Demo 不開天窗。
+    E 列為預算餘裕內的可選升級。
+  </div>
+
+  <h3>兩機型的追蹤原理不同(載具設計要顧到較弱的 100)</h3>
+  <table>
+    <tr><th style="width:6em">機型</th><th>走動跟蹤怎麼運作</th><th>對載具的意義</th></tr>
+    <tr><td><b>CC Pro 100</b></td>
+      <td>聲音觸發 → 叫出該區 Preset → <b>YOLO AI 人形追蹤</b>接手。<b>但追蹤能力較弱:反應慢一拍、且只鎖「畫面中最大的人」</b></td>
+      <td>載具人偶要夠大、正面、行進平穩,YOLO 才咬得住;若旁邊有更大的人形會被搶走,故走道其餘位置在此情境要淨空</td></tr>
+    <tr><td><b>CC Pro 200</b></td>
+      <td>聲音定位算出<b>絕對座標</b> → 以 <b>absposition 指令</b>直接把相機轉到該位置(快又準)→ 之後再交 <b>AI 做小方向微調</b></td>
+      <td>不依賴「畫面中最大」的猜測,對載具人偶大小較不敏感;跟隨更平順</td></tr>
+  </table>
+  <p class="small">載具的視覺需求(R1 人偶完整含頭、R2 行進晃動 ≤±2°、R10 加減速平緩)是<b>以較弱的 100 為基準</b>設計——
+  能餵飽 100 的 YOLO,200 的 absposition 自然更沒問題。</p>
+
+  <figure>
+  <svg viewBox="0 0 860 700" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft JhengHei,sans-serif">
+    <!-- 房間外牆 -->
+    <rect x="150" y="50" width="560" height="560" rx="4" fill="#fdfdfd" stroke="#9aa3ae" stroke-width="4"/>
+    <!-- 螢幕(上牆中央) -->
+    <polygon points="340,42 520,42 540,88 320,88" fill="#ffffff" stroke="#1a2332" stroke-width="2"/>
+    <text x="430" y="72" font-size="12" text-anchor="middle" fill="#1a2332">螢幕</text>
+    <!-- Zone A 走動區 -->
+    <rect x="190" y="96" width="430" height="74" fill="#f9dcdc"/>
+    <text x="612" y="116" font-size="13" font-weight="bold" fill="#1f4fd8" text-anchor="end">Zone A</text>
+    <text x="192" y="88" font-size="13" font-weight="bold" fill="#c0392b">Lecturer T → 載具代演</text>
+    <!-- 循線路徑 -->
+    <line x1="225" y1="146" x2="590" y2="146" stroke="#b07d1e" stroke-width="3"/>
+    <circle cx="225" cy="146" r="5" fill="#b07d1e"/><circle cx="590" cy="146" r="5" fill="#b07d1e"/>
+    <text x="300" y="138" font-size="16" fill="#b07d1e">⟵</text>
+    <text x="510" y="138" font-size="16" fill="#b07d1e">⟶</text>
+    <text x="408" y="186" font-size="11" fill="#b07d1e" text-anchor="middle">白色循線 ~3m · 0.3 m/s 來回</text>
+    <!-- 載具(人偶+底盤) -->
+    <g transform="translate(408,146)">
+      <line x1="0" y1="-20" x2="0" y2="-46" stroke="#8a94a3" stroke-width="3"/>
+      <rect x="-6" y="-46" width="12" height="18" rx="3" fill="#e8f1fa" stroke="#0b5fa5"/>
+      <circle cx="0" cy="-52" r="5" fill="#e8f1fa" stroke="#0b5fa5"/>
+      <rect x="-15" y="-20" width="30" height="18" rx="4" fill="#0b5fa5"/>
+      <circle cx="-9" cy="0" r="4" fill="#1a2332"/><circle cx="9" cy="0" r="4" fill="#1a2332"/>
+    </g>
+    <!-- TR41 相機 ×2(對角) -->
+    <polygon points="648,78 696,78 696,108 672,124 648,108" fill="#1a2332"/>
+    <text x="672" y="142" font-size="13" font-weight="bold" text-anchor="middle" fill="#1a2332">TR41</text>
+    <polygon points="172,586 220,586 220,556 196,540 172,556" fill="#1a2332"/>
+    <text x="238" y="576" font-size="13" font-weight="bold" fill="#1a2332">TR41</text>
+    <!-- 中央桌 + Ceiling MIC ×2 -->
+    <rect x="330" y="225" width="200" height="235" rx="12" fill="#e8ab6f" stroke="#d1904e"/>
+    <rect x="385" y="243" width="90" height="82" rx="8" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>
+    <circle cx="430" cy="284" r="3" fill="#c9ced6"/>
+    <rect x="385" y="372" width="90" height="82" rx="8" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>
+    <circle cx="430" cy="413" r="3" fill="#c9ced6"/>
+    <text x="430" y="354" font-size="12" font-weight="bold" text-anchor="middle" fill="#1a2332">Ceiling MIC ×2</text>
+    <!-- 六個座位:每位一個獨立小 Zone(左 3 + 右 3) -->
+    <!-- 左排 -->
+    <rect x="246" y="213" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <rect x="258" y="227" width="42" height="34" rx="6" fill="#a7b0bc"/>
+    <text x="279" y="207" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 1</text>
+    <rect x="246" y="295" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <circle cx="279" cy="327" r="14" fill="#e6f4ec" stroke="#1d7a4f" stroke-width="2"/>
+    <text x="279" y="332" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d7a4f">A</text>
+    <text x="279" y="289" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 2 · A</text>
+    <rect x="246" y="377" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <rect x="258" y="391" width="42" height="34" rx="6" fill="#a7b0bc"/>
+    <text x="279" y="371" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 3</text>
+    <text x="200" y="470" font-size="11" fill="#5b6878" text-anchor="middle">左排 3 位</text>
+    <!-- 右排 -->
+    <rect x="548" y="213" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <circle cx="581" cy="245" r="16" fill="none" stroke="#b3541e" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="581" y="250" font-size="12" font-weight="bold" text-anchor="middle" fill="#b3541e">N</text>
+    <text x="581" y="207" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 4</text>
+    <text x="622" y="250" font-size="10" fill="#b3541e">噪音位·無人偶</text>
+    <rect x="548" y="295" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <rect x="560" y="309" width="42" height="34" rx="6" fill="#a7b0bc"/>
+    <text x="581" y="289" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 5</text>
+    <rect x="548" y="377" width="66" height="62" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <circle cx="581" cy="409" r="14" fill="#e6f4ec" stroke="#1d7a4f" stroke-width="2"/>
+    <text x="581" y="414" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d7a4f">B</text>
+    <text x="581" y="371" font-size="10" font-weight="bold" text-anchor="middle" fill="#1f4fd8">Zone 6 · B</text>
+    <text x="660" y="470" font-size="11" fill="#5b6878" text-anchor="middle">右排 3 位</text>
+    <!-- Zone 7 · 主席 C(桌首下方) -->
+    <rect x="388" y="478" width="104" height="66" rx="8" fill="#f9dcdc" stroke="#e2a3a3"/>
+    <circle cx="440" cy="513" r="14" fill="#e6f4ec" stroke="#1d7a4f" stroke-width="2"/>
+    <text x="440" y="518" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d7a4f">C</text>
+    <text x="500" y="500" font-size="10" font-weight="bold" fill="#1f4fd8">Zone 7</text>
+    <text x="500" y="516" font-size="11" font-weight="bold" fill="#c0392b">主席 C</text>
+    <!-- Zone 說明 -->
+    <text x="663" y="548" font-size="10" text-anchor="middle" fill="#5b6878">每個座位皆可</text>
+    <text x="663" y="562" font-size="10" text-anchor="middle" fill="#5b6878">獨立劃 Zone</text>
+    <text x="663" y="576" font-size="10" text-anchor="middle" fill="#5b6878">(Zone Mode 時擇一啟用)</text>
+    <!-- R31 (BTS Camera) -->
+    <polygon points="408,656 452,656 452,630 430,614 408,630" fill="#8a94a3"/>
+    <text x="430" y="680" font-size="12" text-anchor="middle" fill="#5b6878">R31 (BTS Camera)</text>
+  </svg>
+  <figcaption>房間佈局(依實際布置圖重繪):<b>六個座位(左 3+右 3)各有獨立 Zone(Zone 1~6)、主席 C 為 Zone 7</b>;
+  Zone Mode 時擇一啟用,其餘皆為 Zone 外。TR41×2 對角、R31(BTS)於下方、Ceiling MIC×2 於中央桌;
+  載具沿 Zone A 循線往返代演 Lecturer T;噪音位(Zone 4)刻意不放人偶,供 CC Pro 200 演示。</figcaption>
+  </figure>
+</section>
+
+<!-- ⑤ 需求規格 -->
+<section id="s5">
+  <h2>⑤ 載具需求規格(由情境推導)</h2>
+  <div class="cols">
+  <div>
+  <h3>A. 視覺(BC200 人形偵測 + 測距)</h3>
+  <p class="small" style="margin:-2px 0 6px"><b>關鍵前提:</b>走動跟蹤是<b>兩段式</b>——聲音只做初次觸發定位,之後的持續跟隨由 <b>AI 人形追蹤</b>接手。
+  因此人偶的<b>可辨識度直接決定追蹤成敗</b>(看不清人形就丟框),以下三項是硬需求。</p>
+  <table>
+    <tr><td class="rid">R1</td><td><b>服飾店 3D 人台(必須含頭)</b>——非平面立牌。座位用<b>半身型+可調腳座</b>,頭部置於坐姿高度 ~1.2m;載具用<b>全身型</b> ~1.7m、嘴部對到 1.5m。
+      <b>理由:4 支相機從不同角度取像,平面立牌只有正對那支看得到</b></td></tr>
+    <tr><td class="rid">R2</td><td>行進中人台晃動 ≤ ±2°,<b>AI 偵測框與雷射落點穩定</b>(晃動會造成追蹤抖動/丟框)</td></tr>
+    <tr><td class="rid">R3</td><td>人台<b>穿上衣服</b>:布料為霧面,滿足雷射回波需求且更像真人;避免裸露亮面塑膠、非黑色吸光</td></tr>
+  </table>
+  <h3>B. 聲音(mic 陣列:定位 + 判人聲)</h3>
+  <table>
+    <tr><td class="rid">R4</td><td>喇叭裝於嘴高 ~1.5m,朝麥克風(高度錯 → 系統性定位誤差)</td></tr>
+    <tr><td class="rid">R5</td><td>車上本地播放(DFPlayer PRO 預載音檔),移動全程不斷音</td></tr>
+    <tr><td class="rid">R6</td><td>音量預校 gain,與固定 6 位能量平衡</td></tr>
+    <tr><td class="rid">R7</td><td>機械噪音 1m 處 &lt; 45 dBA(低於語音 ≥ 20dB)</td></tr>
+    <tr><td class="rid">R8</td><td>待命全靜音:擴大機 mute + 馬達驅動斷電(非僅 PWM=0)</td></tr>
+  </table>
+  <h3>C. 運動</h3>
+  <table>
+    <tr><td class="rid">R9</td><td>Zone A <b>彎曲路徑</b>來回 ≥3m,速度 0.1~0.5 m/s(預設 0.3)——彎道比直線更能演示 AI 追蹤</td></tr>
+    <tr><td class="rid">R10</td><td>加減速斜坡 ≤ 0.2 m/s²,端點平滑折返</td></tr>
+    <tr><td class="rid">R11</td><td>往返不迴轉(前進/倒退),人偶恆面向相機</td></tr>
+    <tr><td class="rid">R12</td><td>5 路循跡模組循<b>白色線</b>+端點標記,停點重複性 ±5cm(<b>5 路才吃得住彎道</b>,2~3 路易在曲率大處脫線)</td></tr>
+  </table>
+  </div>
+  <div>
+  <h3>D. 控制與整合</h3>
+  <table>
+    <tr><td class="rid">R13</td><td>WiFi UDP 受 P4 指令:start/stop/speed/goto/home,反應 &lt;100ms</td></tr>
+    <tr><td class="rid">R14</td><td>狀態回報(位置/循線/播放)→ Web 狀態燈</td></tr>
+    <tr><td class="rid">R15</td><td>斷線自主:跑完當段停於端點;中控偵測離線 → 自動切 crossfade 備援</td></tr>
+  </table>
+  <h3>E. 安全與供電</h3>
+  <table>
+    <tr><td class="rid">R16</td><td>頂部急停;超音波 &lt;30cm 停車;循線遺失 1s 內停</td></tr>
+    <tr><td class="rid">R17</td><td>固定路徑<b>拖線供電</b>(免電池、免充電):地面 24V 電源 → 車上 DC-DC 降壓;線纜以拖鏈/捲線器管理,不絆倒不入鏡</td></tr>
+    <tr><td class="rid">R18</td><td>防傾倒:底盤置<b>配重塊</b>(補少了電池的低重心),重心 &lt;0.4m,傾倒臨界角 &gt;15°</td></tr>
+  </table>
+  <h3>G. 電源 / 接線 / 維護</h3>
+  <table>
+    <tr><td class="rid">R20</td><td>拖線<b>送 24V</b>(非 12V/5V)以壓低長線壓降;拖曳段一律用<b>高柔性(拖鏈/機器人級)電纜</b>+可插拔航空接頭</td></tr>
+    <tr><td class="rid">R21</td><td><b>電源分軌</b>:馬達軌與邏輯/音訊軌各自獨立 DC-DC 與濾波;馬達線遮蔽雙絞、星狀接地——馬達雜訊不得進入音訊(守住 R7)</td></tr>
+    <tr><td class="rid">R22</td><td><b>可維護</b>:接線進端子台、可換式保險絲座、模組快拆、線號標籤;<b>急停只切馬達動力軌</b>,邏輯保持供電以續回報狀態</td></tr>
+  </table>
+  <h3>F. 成本</h3>
+  <table>
+    <tr><td class="rid">R19</td><td>總成本(含備品餘裕)≤ NT$40,000</td></tr>
+  </table>
+  </div>
+  </div>
+</section>
+
+<!-- ⑥ 提案設計 -->
+<section id="s6">
+  <h2>⑥ 提案設計:循線差速載具</h2>
+  <div class="cols">
+    <div>
+      <h3>三層構造(重物全放最低 → R18)</h3>
+      <table>
+        <tr><th>層</th><th>內容</th><th>對應需求</th></tr>
+        <tr><td>底盤層 0~15cm</td><td>靜音減速馬達×2+編碼器、萬向輔助輪、<b>5 路循跡模組(朝下·白線)</b>、超音波(前後)、<b>配重塊</b>、<b>拖鏈電纜航空接頭(24V 進)</b></td><td>R7 R9 R12 R16~R18 R20</td></tr>
+        <tr><td>電源層</td><td><b>24V → DC-DC 分兩軌</b>:12V 馬達軌(經<b>急停繼電器</b>可整路斷電)/ 5V 邏輯+音訊軌(大電容+LC 濾波)。端子台+可換保險絲座</td><td>R8 R16 R20~R22</td></tr>
+        <tr><td>控制層</td><td><b>ESP32-P4+C6 板(或沿用廠內既有 OrangePi)</b>:循線 PID+速度斜坡+UDP 伺服;TB6612 驅動。任務單純(尋線來回+網路控制),不需高階運算</td><td>R10 R13~R15</td></tr>
+        <tr><td>立柱層</td><td><b>輕量立柱+斜撐(免複雜鋁擠)</b>;1.5m 掛喇叭節點(DFPlayer PRO+3W 喇叭);頂夾 1.7m 3D 人偶;頂部急停+狀態 LED</td><td>R1~R5 R16</td></tr>
+      </table>
+      <h3>情境 4 時序(scenes.json 對齊)</h3>
+      <table>
+        <tr><th>t</th><th>中控 P4</th><th>載具</th></tr>
+        <tr><td>t0</td><td>UDP:goto A 端</td><td>循線就位,回報 ready</td></tr>
+        <tr><td>t1</td><td>UDP:play+start 0.3m/s</td><td>連續人聲+斜坡加速右行</td></tr>
+        <tr><td>t2</td><td>—</td><td>端點標記 → 平滑減速、倒退折返(不迴轉)</td></tr>
+        <tr><td>t3</td><td>來回 2~3 趟</td><td>相機全程平順跟蹤</td></tr>
+        <tr><td>t4</td><td>UDP:stop+mute+home</td><td>回不入鏡待命位,馬達斷電</td></tr>
+        <tr><td>t5</td><td>靜默 15s</td><td>→ 順勢演示情境 6 回廣角</td></tr>
+      </table>
+      <p class="small">備援:t1 後 3 秒無回報 → P4 自動切走道 crossfade 腳本(R15)。</p>
+    </div>
+    <div>
+      <figure>
+      <svg viewBox="0 0 300 430" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft JhengHei,sans-serif">
+        <!-- ground -->
+        <line x1="10" y1="405" x2="290" y2="405" stroke="#5b6878" stroke-width="2"/>
+        <rect x="118" y="400" width="70" height="6" fill="#b07d1e"/>
+        <text x="238" y="422" font-size="11" fill="#5b6878">白色循線</text>
+        <!-- power cable -->
+        <path d="M90 380 Q40 384 20 405" fill="none" stroke="#1d7a4f" stroke-width="3"/>
+        <text x="16" y="398" font-size="10" fill="#1d7a4f">長電源線</text>
+        <!-- base -->
+        <rect x="90" y="360" width="120" height="34" rx="6" fill="#1a2332"/>
+        <circle cx="112" cy="398" r="10" fill="#5b6878"/><circle cx="188" cy="398" r="10" fill="#5b6878"/>
+        <text x="150" y="382" font-size="11" fill="#fff" text-anchor="middle">底盤+配重塊</text>
+        <!-- pillar -->
+        <rect x="144" y="80" width="12" height="280" fill="#8a94a3"/>
+        <line x1="150" y1="360" x2="104" y2="300" stroke="#8a94a3" stroke-width="5"/>
+        <line x1="150" y1="360" x2="196" y2="300" stroke="#8a94a3" stroke-width="5"/>
+        <!-- standee -->
+        <g>
+          <circle cx="150" cy="105" r="22" fill="#e8f1fa" stroke="#0b5fa5" stroke-width="2"/>
+          <path d="M110 210 Q150 150 190 210 L190 355 L110 355 Z" fill="#e8f1fa" stroke="#0b5fa5" stroke-width="2"/>
+          <text x="150" y="240" font-size="11" fill="#0b5fa5" text-anchor="middle">3D 人偶 1.7m</text>
+          <text x="150" y="256" font-size="10" fill="#5b6878" text-anchor="middle">霧面·正面朝相機</text>
+        </g>
+        <!-- speaker -->
+        <rect x="196" y="150" width="46" height="30" rx="5" fill="#b07d1e"/>
+        <text x="219" y="169" font-size="10" fill="#fff" text-anchor="middle">喇叭</text>
+        <text x="248" y="146" font-size="10" fill="#b07d1e">嘴高 1.5m</text>
+        <line x1="242" y1="165" x2="278" y2="165" stroke="#b07d1e" stroke-dasharray="3 3"/>
+        <!-- estop -->
+        <circle cx="150" cy="66" r="9" fill="#c0392b"/>
+        <text x="150" y="50" font-size="10" fill="#c0392b" text-anchor="middle">急停</text>
+        <!-- dims -->
+        <line x1="52" y1="80" x2="52" y2="405" stroke="#5b6878" stroke-dasharray="4 3"/>
+        <text x="30" y="240" font-size="10" fill="#5b6878" transform="rotate(-90 30 240)">總高 ~1.75m</text>
+      </svg>
+      <figcaption>載具側視示意:視覺(人偶)+聲音(嘴高喇叭)+運動(5 路循跡循白線底盤)三合一;拖長電源線供電、免電池。</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ⑦ BOM(固定式 + 移動式)+ 備品 -->
+<section id="s7">
+  <h2>⑦ BOM:固定式 + 移動式(載具)</h2>
+  <p class="small">單價依 xlsx 分頁與市場估算(主板 3,361 未稅);兩系統各有預算框:固定式 ≤ NT$10,000、載具 ≤ NT$40,000。</p>
+
+  <h3>7.1 固定式 BOM(中控 + 5 發聲位置 + 4 人偶)</h3>
+  <p class="small">標 <b>◆</b> 者為<b>實際詢價,品名可直接點連結</b>(playrobot / 蝦皮),其餘為市場估算。發聲位置 5 處 = A(P2)、B(P4)、噪音位(P5)、D(P6)、主席 C(P7);P1/P3 為空位不需喇叭。</p>
+  <table>
+    <tr><th>#</th><th>料件</th><th>用途</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計(NT$)</th></tr>
+    <tr><td>1</td><td>◆ <a href="https://shopee.tw/ESP32-P4-WIFI6-POE-ETH%E9%96%8B%E7%99%BC%E6%9D%BF-%E5%9F%BA%E6%96%BCESP32-P4%E5%92%8CESP32-C6-%E6%94%AF%E6%8C%81Wi-Fi-6%E5%92%8CBlue-i.871575797.45201284240" target="_blank" rel="noopener">ESP32-P4-WIFI6-POE-ETH 開發板</a>(ESP32-P4+C6,Wi-Fi 6)<br><span class="src">蝦皮</span></td><td>中控 + 網路</td><td class="num">1</td><td class="num">3,361</td><td class="num">3,361</td></tr>
+    <tr><td>2</td><td>◆ <a href="https://shop.playrobot.com/products/sensor-ces0015" target="_blank" rel="noopener">DFPlayer PRO</a>(內建 128MB,AT 指令)<br><span class="src">playrobot</span></td><td>MP3 播放</td><td class="num">5</td><td class="num">360</td><td class="num">1,800</td></tr>
+    <tr><td>3</td><td>◆ <a href="https://www.icshop.com.tw/products/368030500468" target="_blank" rel="noopener">PAM8403 迷你 5V 數字功放模組</a>(USB 供電)<br><span class="src">iCShop</span></td><td>分位<b>硬體音量校準</b>(R6)</td><td class="num">5</td><td class="num">55</td><td class="num">275</td></tr>
+    <tr><td>4</td><td>◆ <a href="https://www.icshop.com.tw/products/368011200072" target="_blank" rel="noopener">喇叭 4Ω / 5W</a><br><span class="src">iCShop</span></td><td>桌上發聲</td><td class="num">5</td><td class="num">163</td><td class="num">815</td></tr>
+    <tr><td>5</td><td>◆ <a href="https://shop.cpu.com.tw/product/55322/info/" target="_blank" rel="noopener">74HC4051 8 通道多路選擇器<b>模組</b></a><br><span class="src">CPU 良興</span></td><td>一路 UART 控多顆</td><td class="num">1</td><td class="num">85</td><td class="num">85</td></tr>
+    <tr><td>6</td><td>◆ <a href="https://shop.cpu.com.tw/product/30137/info/" target="_blank" rel="noopener"><b>MW 明緯 85W 交換式電源</b></a>(取其 5V/8A,88~264VAC)<br><span class="src">CPU 良興 · 含稅 699</span></td><td><b>5V/8A 專供所有音訊設備</b>(5×DFPlayer+5×PAM8403+喇叭);<b>只用 5V 軌</b></td><td class="num">1</td><td class="num">666</td><td class="num">666</td></tr>
+    <tr><td>7</td><td>板+螢幕走 <b>PoE 供電</b>(沿用機房 PoE+ 交換埠 / 被動注入器)</td><td>音訊已獨立於 MW,板+螢幕僅 ~8W → PoE 綽綽有餘,<b>與音訊實體隔離</b>(R21)</td><td class="num">1</td><td class="num">250</td><td class="num">250</td></tr>
+    <tr><td>8</td><td>USB Hub(供電型)<span class="src"> · 視 P4 板周邊埠數需求</span></td><td>擴充周邊連接埠</td><td class="num">1</td><td class="num">150</td><td class="num">150</td></tr>
+    <tr><td>9</td><td>遮蔽/雙絞喇叭線+端子(拉到各位置)</td><td>長距離抗拾噪,與電源/UART 分槽</td><td class="num">1</td><td class="num">600</td><td class="num">600</td></tr>
+    <tr><td>10</td><td>洞洞板+杜邦線+電阻</td><td>中控內部接線</td><td class="num">1</td><td class="num">200</td><td class="num">200</td></tr>
+    <tr><td>11</td><td>中控盒(可開蓋/散熱孔/DIN 導軌)</td><td>外殼 + 便於維修</td><td class="num">1</td><td class="num">350</td><td class="num">350</td></tr>
+    <tr><td>12</td><td>◆ <a href="https://shopee.tw/%E5%8F%B0%E7%81%A3%E7%8F%BE%E8%B2%A8-%E6%9C%8D%E9%A3%BE%E6%A8%A1%E7%89%B9%E5%85%92-%E5%A5%B3%E8%A3%9D%E6%A8%A1%E7%89%B9%E5%85%92-%E5%81%87%E4%BA%BA%E6%A8%A1%E7%89%B9%E5%85%92-%E7%99%BC%E6%B3%A1%E6%A8%A1%E7%89%B9%E5%85%92-%E5%8D%8A%E8%BA%AB%E6%A8%A1%E7%89%B9%E5%85%92-%E6%AB%A5%E7%AA%97%E6%A8%A1%E7%89%B9%E5%85%92-%E6%93%BA%E6%94%A4%E4%BA%BA%E6%AA%AF%E6%A8%A1%E7%89%B9%E5%85%92-%E4%BA%BA%E5%BD%A2%E6%A8%A1%E7%89%B9%E5%85%92-i.882581447.16088811171" target="_blank" rel="noopener"><b>服飾店 3D 發泡人台(含頭)</b></a> ×4(A/B/C/D)<br><span class="src">蝦皮·台灣現貨 · 泡棉材質(輕+霧面) · 頭部調到<b>坐姿高度 ~1.2m</b><br>另比價 momo 2,495</span></td><td>給 BC200 <b>多角度</b>人形偵測</td><td class="num">4</td><td class="num">2,090</td><td class="num">8,360</td></tr>
+    <tr><td>13</td><td>端子台 + 可換式保險絲座</td><td>維護:免焊快換</td><td class="num">1</td><td class="num">300</td><td class="num">300</td></tr>
+    <tr><td>14</td><td>走線槽 + 線號標籤 + 束線</td><td>維護:現場可循線排錯</td><td class="num">1</td><td class="num">250</td><td class="num">250</td></tr>
+    <tr><td>15</td><td>佈線雜項</td><td>—</td><td class="num">1</td><td class="num">200</td><td class="num">200</td></tr>
+    <tr class="total"><td colspan="5">固定式核心小計(未稅)</td><td class="num">17,662</td></tr>
+    <tr><td colspan="5">預算框</td><td class="num">10,000</td></tr>
+    <tr class="margin" style="background:#fbeee6;color:#b3541e"><td colspan="5">核心餘裕</td><td class="num">−7,662(超框;主因 3D 人台 8,360,見下)</td></tr>
+    <tr class="margin"><td colspan="5">扣除人台(移作展示道具)後固定式</td><td class="num">9,302 ✔ 在框內</td></tr>
+  </table>
+  
+  
+  
+  
+
+  <h3>7.2 移動式(載具)BOM ── 循白線 + 拖電源線 + 沿用廠內板子(成本壓低)</h3>
+  <table>
+    <tr><th>#</th><th>料件</th><th>用途 / 對應需求</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計(NT$)</th></tr>
+    <tr><td>1</td><td>底盤板材 + 萬向輔助輪 + 結構五金</td><td>差速底盤本體</td><td class="num">1</td><td class="num">800</td><td class="num">800</td></tr>
+    <tr><td>2</td><td>◆ <a href="https://www.icshop.com.tw/products/368030501390" target="_blank" rel="noopener">12V 減速馬達 JGB37-540B(含霍爾編碼器)</a><br><span class="src">iCShop · 另有 <a href="https://www.icshop.com.tw/products/368031200140" target="_blank" rel="noopener">146rpm 帶編碼器版</a>;單價待正式報價</span></td><td>差速驅動 + 里程回授(R7/R9)</td><td class="num">2</td><td class="num">600</td><td class="num">1,200</td></tr>
+    <tr><td>3</td><td>橡膠輪(65mm 級,軟胎降噪)</td><td>降低胎噪(R7)</td><td class="num">2</td><td class="num">150</td><td class="num">300</td></tr>
+    <tr><td>4</td><td>◆ <a href="https://www.ucielectronics.com/products/%E3%80%90uci%E9%9B%BB%E5%AD%90%E3%80%9113-1-%E4%BA%94%E8%B7%AF%E5%B0%8B%E8%B7%A1%E6%A8%A1%E7%B5%84-%E4%BA%94%E8%B7%AF%E5%BE%AA%E8%B7%A1%E6%A8%A1%E7%B5%84-%E5%B0%8B%E8%B7%A1%E5%82%B3%E6%84%9F%E5%99%A8-%E5%BE%AA%E8%B7%A1%E6%A8%A1%E7%B5%84-%E5%BE%AA%E8%B7%A1-%E4%BA%94%E8%B7%AF" target="_blank" rel="noopener">UCI 五路尋跡模組</a><br><span class="src">UCI 電子 · <b>前後各一</b>,倒退折返時前方仍有循跡</span></td><td>循白線 + 彎道循跡(R12)</td><td class="num">2</td><td class="num">88</td><td class="num">176</td></tr>
+    <tr><td>5</td><td>TB6612 馬達驅動模組</td><td>動力輸出(可整路斷電)</td><td class="num">1</td><td class="num">150</td><td class="num">150</td></tr>
+    <tr><td>6</td><td>◆ <a href="https://shopee.tw/ESP32-P4-WIFI6-POE-ETH%E9%96%8B%E7%99%BC%E6%9D%BF-%E5%9F%BA%E6%96%BCESP32-P4%E5%92%8CESP32-C6-%E6%94%AF%E6%8C%81Wi-Fi-6%E5%92%8CBlue-i.871575797.45201284240" target="_blank" rel="noopener"><b>ESP32-P4-WIFI6-POE-ETH 開發板</b></a>(ESP32-P4+C6,Wi-Fi 6)<br><span class="src">蝦皮 · 或沿用廠內 OrangePi(可省)</span></td><td>載具核心:尋線+網路控制(R13~R15)</td><td class="num">1</td><td class="num">3,361</td><td class="num">3,361</td></tr>
+    <tr><td>7</td><td><b>高柔性拖鏈電纜(機器人級,4 芯 ~10m)</b></td><td>拖曳供電主幹;耐反覆彎折(R20)</td><td class="num">1</td><td class="num">1,200</td><td class="num">1,200</td></tr>
+    <tr><td>8</td><td><b>拖鏈/捲線器 + 車端航空接頭(可插拔)</b></td><td>線纜管理 + 免硬接好維修(R20)</td><td class="num">1</td><td class="num">800</td><td class="num">800</td></tr>
+    <tr><td>9</td><td><b>地面端 24V/5A 電源供應器</b></td><td>送 24V 降低長線壓降(R20)</td><td class="num">1</td><td class="num">700</td><td class="num">700</td></tr>
+    <tr><td>10</td><td>◆ <a href="https://www.taiwaniot.com.tw/product/dc-dc-xl4015-75w/" target="_blank" rel="noopener">DC-DC XL4015 可調降壓模組</a>×2(24V→12V 馬達軌 / 24V→5V 邏輯音訊軌)</td><td><b>分軌隔離馬達雜訊</b>(R21)</td><td class="num">2</td><td class="num">100</td><td class="num">200</td></tr>
+    <tr><td>11</td><td>輕量立柱+簡易支架(免複雜鋁擠)</td><td>撐 1.7m 3D 人偶+喇叭@1.5m(R1/R4)</td><td class="num">1</td><td class="num">1,500</td><td class="num">1,500</td></tr>
+    <tr><td>12</td><td>◆ 車載喇叭節點(<a href="https://shop.playrobot.com/products/sensor-ces0015" target="_blank" rel="noopener">DFPlayer PRO</a> 360 + <a href="https://www.icshop.com.tw/products/368030500468" target="_blank" rel="noopener">PAM8403</a> 55 + <a href="https://www.icshop.com.tw/products/368011200072" target="_blank" rel="noopener">喇叭</a> 163 + 配件)</td><td>車上聲源(R5)</td><td class="num">1</td><td class="num">700</td><td class="num">700</td></tr>
+    <tr><td>13</td><td>◆ <b>服飾店 3D 發泡人台(全身·含頭)</b>·車載固定件<br><span class="src">泡棉輕 → 重心低、防傾倒容易(R18),嘴部對到 1.5m</span></td><td>視覺人形,移動中各角度都要偵測得到(R1/R3)</td><td class="num">1</td><td class="num">2,090</td><td class="num">2,090</td></tr>
+    <tr><td>14</td><td><b>急停繼電器(只切馬達動力軌)</b></td><td>急停後邏輯仍供電、可回報(R22)</td><td class="num">1</td><td class="num">250</td><td class="num">250</td></tr>
+    <tr><td>15</td><td>急停按鈕 + 超音波避障×2</td><td>安全(R16)</td><td class="num">1</td><td class="num">1,000</td><td class="num">1,000</td></tr>
+    <tr><td>16</td><td><b>端子台+可換保險絲座+模組快拆接頭</b></td><td>維護:人偶/喇叭/控制盒快換(R22)</td><td class="num">1</td><td class="num">500</td><td class="num">500</td></tr>
+    <tr><td>17</td><td><b>遮蔽馬達線+星狀接地+線號標籤</b></td><td>抗雜訊 + 可循線排錯(R21/R22)</td><td class="num">1</td><td class="num">300</td><td class="num">300</td></tr>
+    <tr><td>18</td><td><b>狀態指示 LED(電源/循線/播放)</b></td><td>遠端可從相機畫面目視狀態(R14)</td><td class="num">1</td><td class="num">100</td><td class="num">100</td></tr>
+    <tr><td>19</td><td>白色循線膠帶+端點標記</td><td>可重複路徑(R12)</td><td class="num">1</td><td class="num">400</td><td class="num">400</td></tr>
+    <tr><td>20</td><td>配重塊+3D 列印支架/雜項</td><td>組裝+防傾倒(R18)</td><td class="num">1</td><td class="num">1,500</td><td class="num">1,500</td></tr>
+    <tr class="total"><td colspan="5">移動式核心小計(未稅)</td><td class="num">17,227</td></tr>
+    <tr class="margin"><td colspan="5">預算框 40,000 → 核心餘裕</td><td class="num">22,773</td></tr>
+  </table>
+  
+
+  <h3>7.3 備品清單(晶片/模組/耗材抓 20~30% 損壞餘裕)</h3>
+  <p class="small">原則:單價低的晶片/模組多買 1~2 顆(燒錄、靜電、焊壞不用等料);機構件抓「最易損的關鍵一組」(馬達輪組);耗材抓消耗量。載具核心板(P4+C6)沿用廠內 OrangePi/庫存,備援零成本。</p>
+  <table>
+    <tr><th>側</th><th>備品項目</th><th>備援理由</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計(NT$)</th></tr>
+    <tr><td>固定式</td><td>◆ DFPlayer PRO</td><td>5 顆在役,音訊模組最易損</td><td class="num">2</td><td class="num">360</td><td class="num">720</td></tr>
+    <tr><td>固定式</td><td>◆ 喇叭 4Ω/5W</td><td>過推破音備援</td><td class="num">2</td><td class="num">163</td><td class="num">326</td></tr>
+    <tr><td>固定式</td><td>◆ PAM8403 功放模組</td><td>易損小模組</td><td class="num">2</td><td class="num">55</td><td class="num">110</td></tr>
+    <tr><td>固定式</td><td>◆ 74HC4051 模組</td><td>靜電/焊壞備援</td><td class="num">1</td><td class="num">85</td><td class="num">85</td></tr>
+    <tr><td>固定式</td><td>◆ <b>3D 發泡人台(含頭)</b></td><td>碰撞/破損備援;泡棉易凹陷</td><td class="num">1</td><td class="num">2,090</td><td class="num">2,090</td></tr>
+    <tr><td>固定式</td><td>◆ <b>MW 明緯 85W 雙組電源</b></td><td><b>單點故障:壞了整套全無聲</b></td><td class="num">1</td><td class="num">666</td><td class="num">666</td></tr>
+    <tr><td>固定式</td><td>電容/保險絲/端子/喇叭線 備品包</td><td>調試期消耗</td><td class="num">1</td><td class="num">700</td><td class="num">700</td></tr>
+    <tr class="total"><td colspan="5">固定式備品小計(佔核心 26.8%)</td><td class="num">4,697</td></tr>
+    <tr><td>移動式</td><td><b>高柔性拖鏈電纜 5m</b></td><td><b>反覆彎折最易斷芯 → 載具頭號單點失效</b></td><td class="num">1</td><td class="num">600</td><td class="num">600</td></tr>
+    <tr><td>移動式</td><td>◆ UCI 五路尋跡模組</td><td>朝地安裝易刮傷/髒污</td><td class="num">2</td><td class="num">88</td><td class="num">176</td></tr>
+    <tr><td>移動式</td><td>TB6612 驅動模組</td><td>馬達突波最先燒</td><td class="num">2</td><td class="num">150</td><td class="num">300</td></tr>
+    <tr><td>移動式</td><td><b>DC-DC 降壓模組</b></td><td>馬達軌/音訊軌各備一顆</td><td class="num">2</td><td class="num">100</td><td class="num">200</td></tr>
+    <tr><td>移動式</td><td>超音波模組 HC-SR04</td><td>易損小模組</td><td class="num">2</td><td class="num">50</td><td class="num">100</td></tr>
+    <tr><td>移動式</td><td>◆ DFPlayer PRO</td><td>車上聲源備援</td><td class="num">1</td><td class="num">360</td><td class="num">360</td></tr>
+    <tr><td>移動式</td><td>◆ PAM8403 模組 + 喇叭 4Ω/5W</td><td>車上聲源備援</td><td class="num">1</td><td class="num">218</td><td class="num">218</td></tr>
+    <tr><td>移動式</td><td>◆ 12V 減速馬達(含編碼器)</td><td>齒輪磨損最易損、斷料期長</td><td class="num">1</td><td class="num">600</td><td class="num">600</td></tr>
+    <tr><td>移動式</td><td><b>保險絲/端子/航空接頭 備品包</b></td><td>拖線反覆插拔的消耗件</td><td class="num">1</td><td class="num">300</td><td class="num">300</td></tr>
+    <tr><td>移動式</td><td>白色循線膠帶 ×2 卷+標記耗材</td><td>撕貼調整路徑會消耗</td><td class="num">1</td><td class="num">400</td><td class="num">400</td></tr>
+    <tr class="total"><td colspan="5">移動式備品小計(佔核心 18.9%<span class="src">;核心板備援 = 廠內 OrangePi,不另購</span>)</td><td class="num">3,254</td></tr>
+    <tr class="margin"><td colspan="5">備品合計(未稅)= 4,697 + 3,254</td><td class="num">7,951</td></tr>
+  </table>
+
+  <h3>7.4 從「電源 / 接線 / 維護」重新審視(本次修訂依據)</h3>
+  <p class="small">改成拖線供電、核心板改用 P4+C6/OrangePi 之後,原清單有幾個<b>會在現場出事</b>的缺口。逐項列出,對策已全部納入 7.1 / 7.2。</p>
+  <table>
+    <tr><th style="width:4.5em">面向</th><th>發現的問題</th><th>對策(已入 BOM)</th></tr>
+    <tr><td rowspan="3"><b>電源</b></td>
+        <td><b>拖線送 12V/5V 會壓降</b>:走線來回約 10m,12V/3A 用 18AWG 壓降約 1.3V(−11%)→ 馬達變慢、DFPlayer 低壓重置</td>
+        <td>改<b>送 24V</b>,車上再 DC-DC 降壓。同功率電流減半、壓降減半,線徑可細、拖線更輕更耐彎</td></tr>
+    <tr><td><b>馬達與音訊共軌</b>:馬達 PWM 雜訊灌進音訊,<b>mic 陣列聽得到</b> → 直接違反 R7 並干擾聲音定位</td>
+        <td>馬達軌與邏輯/音訊軌<b>各自獨立 DC-DC</b>;音訊軌加大電容+LC 濾波(固定式本來就有,<b>移動式原本漏了</b>)</td></tr>
+    <tr><td><b>固定式若走 PoE+ 會超載</b>:板+螢幕 ~8W + 音訊全開峰值 ~24W = <b>32W &gt; PoE+ 25.5W 上限</b></td>
+        <td><b>固定式佈線本來就固定、好拉 → 改用一顆 MW 明緯 85W 雙組電源</b>(5V/8A 音訊軌 + 24V/2A 經 DC-DC 降 5V 餵板+螢幕),
+        <b>兩軌實體獨立、音訊突波灌不進主板</b>;免 PoE+ 注入器成本、免 25.5W 上限,單一 AC 入線與保險絲,維修單純</td></tr>
+    <tr><td rowspan="4"><b>接線</b></td>
+        <td><b>一般 PVC 電源線反覆彎折會斷芯</b> —— 這是拖線載具的<b>頭號單點失效</b></td>
+        <td>拖曳段改<b>高柔性(拖鏈/機器人級)電纜</b> + 拖鏈/捲線器;備品另備 5m</td></tr>
+    <tr><td>硬接線不利維修,拆換要動烙鐵</td>
+        <td>車端/地面端改<b>可插拔航空接頭(GX16)</b></td></tr>
+    <tr><td>馬達線與音訊線並走會耦合雜訊</td>
+        <td><b>馬達線遮蔽雙絞</b>、與音訊線分槽、<b>星狀接地</b></td></tr>
+    <tr><td>固定式喇叭線要拉到 6 個桌位,長距離易拾噪</td>
+        <td>改<b>遮蔽/雙絞喇叭線</b>,與電源/UART 分槽走</td></tr>
+    <tr><td rowspan="5"><b>維護</b></td>
+        <td><b>急停若切總電源</b>,控制器一起斷電 → 無法回報狀態、復歸也麻煩</td>
+        <td>急停經<b>繼電器只切馬達動力軌</b>,邏輯維持供電(仍能回報 R14)</td></tr>
+    <tr><td>無人房間、現場沒人熟悉線路,故障要能快速換件</td>
+        <td>接線全進<b>端子台</b>、<b>可換式保險絲座</b>、人偶/喇叭/控制盒<b>快拆接頭</b>、<b>線號標籤+走線槽</b></td></tr>
+    <tr><td>遠端業務看不到載具實體狀態</td>
+        <td><b>狀態指示 LED</b>(電源/循線/播放),遠端直接從相機畫面目視</td></tr>
+    <tr><td>中控盒不利維修</td>
+        <td>改<b>可開蓋+散熱孔+DIN 導軌</b></td></tr>
+    <tr><td>備品沒涵蓋真正的易損件與單點故障</td>
+        <td>增列<b>拖鏈電纜、DC-DC 模組、音訊電源供應器</b>(最後者是六位共用的單點故障)</td></tr>
+  </table>
+  <div class="callout warn">
+    <b>要注意的一點:</b>固定式補上維護件後核心來到 <b>9,791</b>,1 萬框只剩 <b>209</b> 餘裕——已無空間再加料。
+    其 22.4% 備品(2,190)須計入專案共用餘裕(載具 4 萬框尚餘 23,350,足以吸收)。
+  </div>
+</section>
+
+<!-- ⑧ 最終 BOM -->
+<section id="s8">
+  <h2>⑧ 最終 BOM 總表(固定式 + 移動式)</h2>
+  <table>
+    <tr><th>系統</th><th>核心(未稅)</th><th>備品(未稅)</th><th class="num">預算框</th><th class="num">核心餘裕</th></tr>
+    <tr><td>固定式(中控+5 發聲位置+<b>4 座 3D 人台</b>)</td><td class="num">17,662</td><td class="num">4,697</td><td class="num">10,000</td><td class="num" style="color:#b3541e">−7,662</td></tr>
+    <tr><td>移動式(載具,含全身 3D 人台)</td><td class="num">17,227</td><td class="num">3,254</td><td class="num">40,000</td><td class="num">22,773</td></tr>
+    <tr class="total"><td>合計</td><td class="num">34,889</td><td class="num">7,951</td><td class="num">50,000</td><td class="num">15,111</td></tr>
+  </table>
+  <table>
+    <tr><th>專案總計</th><th class="num">金額(NT$)</th></tr>
+    <tr><td>核心合計(未稅)</td><td class="num">34,889</td></tr>
+    <tr><td>備品合計(未稅)</td><td class="num">7,951</td></tr>
+    <tr class="total"><td>小計(未稅)</td><td class="num">42,840</td></tr>
+    <tr><td>稅 5%</td><td class="num">2,142</td></tr>
+    <tr class="grand"><td>最終合計(含稅)</td><td class="num">44,982</td></tr>
+    <tr><td>兩框合計上限</td><td class="num">50,000</td></tr>
+    <tr class="margin"><td>總餘裕(含稅口徑)</td><td class="num">5,018</td></tr>
+  </table>
+  <p class="small">註:載具核心板改用完整 <b>ESP32-P4-WIFI6-POE-ETH(3,361)</b>,移動式核心升至 17,227(若沿用廠內 OrangePi 可回到 ~13,900)。
+  3D 人台 5 座共 <b>10,450</b>(2,090/座),使固定式核心 17,662 <b>超出 1 萬框 7,662</b>;建議<b>把人台移出固定式框、獨立列為展示道具</b>——扣除後固定式 <b>9,302 ✔ 在框內</b>。
+  專案含稅合計 <b>44,982</b>,兩框合計 50,000 內仍餘 <b>5,018</b>。</p>
+
+  <h3>驗收標準(對回兩份 Demo 文件)</h3>
+  <table>
+    <tr><th>Demo 項目</th><th>驗收條件</th></tr>
+    <tr><td>4 講者走動跟蹤</td><td>CC Pro 連續 3 趟來回不丟框、畫面平順;重播軌跡/停點一致(±5cm);語音全程不斷</td></tr>
+    <tr><td>1/2/3 聲觸發·PBP·Zone</td><td>載具待命時,相機畫面內看不到載具人偶;各情境效果與固定式單測一致</td></tr>
+    <tr><td>5 噪音抗干擾(Pro 200)</td><td>載具斷電待命,聲壓計實測載具方向無 &gt;40 dBA 聲源</td></tr>
+    <tr><td>6 回 Home</td><td>全系統靜默 15s 相機自動回廣角;載具無待機底噪</td></tr>
+  </table>
+
+  <h3>主要風險與對策</h3>
+  <table>
+    <tr><th>風險</th><th>對策</th></tr>
+    <tr><td>BC200 對「移動中 3D 人偶」偵測率未知</td><td><b>先手推立柱+人偶驗證偵測</b>,通過才上底盤(去風險排序第一步)</td></tr>
+    <tr><td>馬達/胎面噪音被 mic 陣列定位</td><td>靜音馬達+軟胎;聲壓計驗 R7;不過關降速 0.2 m/s</td></tr>
+    <tr><td>人偶晃動</td><td>斜撐+底盤配重塊+加減速斜坡;改用發泡人台(本身就輕)</td></tr>
+    <tr><td>拖曳電源線絆倒/入鏡</td><td>捲線器+拖線臂沿牆邊收線,固定路徑不跨越座位;必要時走高架線</td></tr>
+    <tr><td>WiFi 不穩</td><td>車端自主循線只收高階指令;斷線跑完當段+crossfade 備援</td></tr>
+    <tr><td>待命位選錯 → 畫面多一個「人」</td><td>以三台相機實機畫面確認待命位不入鏡、在 Zone 外</td></tr>
+  </table>
+
+  <div class="callout ok">
+    <b>建議下一步:</b>① 固定式系統先跑通情境 1/2/3/5/6 → ② 手推人偶驗證 BC200 移動偵測 →
+    ③ 長交期料先購(底盤、馬達、立柱)、載具核心沿用廠內 OrangePi → ④ 載具組裝與情境 4 整合。
+  </div>
+</section>
+
+<section id="s9">
+  <h2>⑨ 數位系統(預約與展示)</h2>
+  <p>數位面(預約、控制、串流、維運)獨立為另一份文件,含問題狀況、方案解法、3D 示意圖、怎麼預約、怎麼展示 →
+  <a href="TS-60629_數位系統_預約與展示.html" target="_blank"><b>《TS-60629 數位系統(預約與展示)》</b></a>。</p>
+</section>
+
+<footer>TS-60629 載具需求分析與提案 · 2026-07-20 · 依據 26-0703 兩份 Demo 文件與遠程無人DemoRoom_規劃.xlsx 產出</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ================= 世界座標(房間 0..100,1 unit = 0.07 m) ================= */
+const U2M = 0.07;
+const W = {
+  room:{x0:5,y0:5,x1:95,y1:95},
+  screen:{x0:38,y0:2,x1:62,y1:7},
+  zoneA:{x0:8,y0:9,x1:82,y1:21},          // 走動區(T 會移動,故為帶狀)
+  track:{x0:13,x1:77,y:15,amp:4.2},      // 彎曲循線(S 形),非直線
+  home:{x:88,y:83},
+  table:{x0:34,y0:30,x1:64,y1:70},
+  mics:[{x:49,y:42},{x:49,y:58}],
+};
+// 7 個桌上位置:左 3 + 右 3 + 桌首主席,每個位置一個貼身小 Zone(半徑 ZR)
+const ZR=8;                                 // Zone 半寬 ≈0.56m → 約 1.1m 見方
+const SEATS=[
+  {id:"E1",    x:19, y:31, preset:"P1", standee:false},   // 左上(空位)
+  {id:"A",     x:19, y:48, preset:"P2", standee:true },   // 左中(Zone Mode 鎖定主角)
+  {id:"E3",    x:19, y:65, preset:"P3", standee:false},   // 左下(空位)
+  {id:"B",     x:79, y:31, preset:"P4", standee:true },   // 右上(抗干擾插話位)
+  {id:"NOISE", x:79, y:48, preset:"P5", standee:false},   // 右中(噪音位·刻意不放人偶)
+  {id:"D",     x:79, y:65, preset:"P6", standee:true },   // 右下(抗干擾插話位)
+  {id:"C",     x:49, y:83, preset:"P7", standee:true, chair:true}, // 桌首·主席
+];
+function seat(id){return SEATS.find(s=>s.id===id);}
+function zoneOf(s){return {x0:s.x-ZR,y0:s.y-ZR,x1:s.x+ZR,y1:s.y+ZR};}
+function inZone(px,py,s){return px>=s.x-ZR&&px<=s.x+ZR&&py>=s.y-ZR&&py<=s.y+ZR;}
+W.people={
+  A:seat("A"), B:seat("B"), C:seat("C"), D:seat("D"),
+  T:{x:44,y:15,preset:"PA"},
+};
+W.noise=seat("NOISE");
+const MIC={x:49,y:49,z:40};      // 天花板麥克風陣列 ≈2.8m
+const PLANE_H=1.5/U2M;           // 系統假設人聲平面 1.5m
+const NOISE_H=0.8/U2M;           // 噪音源高度(桌面) 0.8m
+const PH=22, TH=9, WH=30;
+const COS30=Math.cos(Math.PI/6), SIN30=0.5;
+
+/* ================= 真實運算:聲音點(射線 → 假設平面) ================= */
+function soundPoint(px,py,mouthH){
+  const dz = mouthH - MIC.z;
+  if(Math.abs(dz)<1e-6) return {x:px,y:py};
+  const t = (PLANE_H - MIC.z)/dz;          // 射線參數
+  return { x: MIC.x + (px-MIC.x)*t, y: MIC.y + (py-MIC.y)*t };
+}
+function spkUnits(){ return spkHm/U2M; }
+
+/* ===== 對話模式:明確的發言輪次表(同一時間只有一個聲源) =====
+   pbp = 目前分割數(未達標則不分割);new = 該位首次發言、尚未累積到門檻 */
+const CONV_TURN=1.2;
+/* PBP 版面順序:新加入者排上排,原本的 A/B 留下排
+   3-way → 上 C / 左下 A / 右下 B     4-way → 左上 T / 右上 C / 左下 A / 右下 B */
+const CONV_PBP={2:["A","B"],3:["A","B","C"],4:["T","C","A","B"]};
+const CONV_NEW={3:"C",4:"T"};
+const CONV_TURNS=[
+  {sp:"A"},          {sp:"B"},          {sp:"A"},          {sp:"B"},           // 1-4 來回,單框
+  {sp:"A",pbp:2},    {sp:"B",pbp:2},                                            // 5-6 達標 → 2-way
+  {sp:"C",pbp:2,nw:1},{sp:"A",pbp:2},                                           // 7-8 C 首發,仍 2-way
+  {sp:"C",pbp:3},    {sp:"B",pbp:3},    {sp:"C",pbp:3},                          // 9-11 C 達標 → 3-way
+  {sp:"T",pbp:3,nw:1},{sp:"A",pbp:3},                                            // 12-13 T 首發,仍 3-way
+  {sp:"T",pbp:4},    {sp:"B",pbp:4},    {sp:"T",pbp:4},                          // 14-16 T 達標 → 4-way
+];
+
+/* ================= 情境 ================= */
+const SC = {
+1:{name:"單人發聲",fn:"聲音觸發功能",models:[100,200],dur:12,
+   fixture:"A、B、C 輪流發聲,攝像機畫面依序切換",
+   effect:"畫面依序切到說話的人(各座位有各自的 Zone Preset)",
+   update(t){const tt=t%12;let sp=null;
+     if(tt<3)sp="A"; else if(tt<3.6)sp=null; else if(tt<6.6)sp="B"; else if(tt<7.2)sp=null; else if(tt<10.2)sp="C";
+     this._last=sp||this._last||"A";
+     const lv={}; if(sp) lv[sp]=0.55+0.45*Math.abs(Math.sin(t*6));
+     const p=W.people[this._last];
+     return {levels:lv,carrier:homeC(),zoneActive:sp,
+       sources: sp?[{id:sp,accept:true}]:[],
+       camera:{mode:"single",focus:this._last,preset:`${p.preset}`},
+       track:"聲觸發鎖定",
+       phase: sp?`聲音觸發 → 切到 <b>${sp}</b>(叫出 Zone ${W.people[sp].preset} 的 Preset)`:"Preset 切換中…",
+       effect:`單框:${this._last} · 該座位 Preset ${p.preset}`};}},
+
+2:{name:"多人對話 (2~4人)",fn:"對話模式功能",models:[100,200],dur:19.2,
+   fixture:"依序來回對話(同一時間只有一個人發聲);2 人 → 3 人 → 4 人",
+   effect:"先單框依序切換;達標才進 PBP —— 2 人左右分割、3 人<b>上 C／左下 A／右下 B</b>、4 人 2×2<b>左上 T／右上 C／左下 A／右下 B</b>",
+   update(t){
+     const N=CONV_TURNS.length;
+     const i=Math.floor((t%(N*CONV_TURN))/CONV_TURN);
+     const cur=CONV_TURNS[i], prev=CONV_TURNS[(i-1+N)%N];
+     const sp=cur.sp;                                   // 同一時間只有「一個」聲源
+     const n=cur.pbp||0, pn=prev.pbp||0;
+     const pbp=n?CONV_PBP[n]:null;
+     let note;
+     if(!n)            note="來回觸發中,<b>尚未達標 → 仍是單框切換</b>";
+     else if(cur.nw)   note=`<b>${sp}</b> 首次發言(尚未達標,維持 ${n}-way)`;
+     else if(n>pn)     note=`來回觸發達標 → 進 <b>PBP ${n}-way</b>`;
+     else              note=`<b>PBP ${n}-way</b> 對話中`;
+     const lv={}; lv[sp]=0.55+0.45*Math.abs(Math.sin(t*6));
+     const car=(i>=11)?onTrack(0.5,sp==="T"):homeC();    // T 自第 12 輪起加入
+     const cam=pbp?{mode:"pbp",subjects:pbp,active:sp,newest:CONV_NEW[n],preset:`PBP ${n}-way`}
+                  :{mode:"single",focus:sp,preset:W.people[sp].preset};
+     return {levels:lv,carrier:car,zoneActive:pbp?null:sp,
+       sources:[{id:sp,accept:true}],
+       camera:cam,
+       track: pbp?`PBP ${n}-way · 現在 <b>${sp}</b> 發聲`:`單框 ${sp} · 已觸發 ${i+1} 次`,
+       phase:`第 ${i+1} 輪:目前只有 <b>${sp}</b> 在發聲 —— ${note}`,
+       effect: pbp?`PBP ${n} 分割,目前 ${sp} 在說`:`單框:依序切到 ${sp}(對話尚未成立)`};}},
+
+3:{name:"Zone Mode 抗干擾",fn:"Zone Mode 功能",models:[100,200],dur:16,
+   fixture:"只開 A 位置的 Zone;<b>一次只有一個位置發聲</b>(聲音一次只鎖最大聲),依序輪流觸發",
+   effect:"Zone 內的 A 觸發才動作;P4/P6 觸發但在 Zone 外 → <b>畫面完全不動</b>",
+   update(t){
+     const TN=1.6;
+     const SEQ=[{sp:"A"},{sp:"A"},{sp:"B",out:1},{sp:"A"},{sp:"D",out:1},
+                {sp:"A"},{sp:"B",out:1},{sp:"D",out:1},{sp:"A"}];
+     const i=Math.floor((t%(SEQ.length*TN))/TN);
+     const cur=SEQ[i], sp=cur.sp, out=!!cur.out;
+     const lv={}; lv[sp]=0.55+0.45*Math.abs(Math.sin(t*6));   // 同一時間只有一個聲源
+     const ph = out
+       ? `第 ${i+1} 次觸發:<b>${sp}</b>(${W.people[sp].preset})發聲 → 落在 <b>Zone 外</b> → 忽略,<b>畫面不動</b>`
+       : `第 ${i+1} 次觸發:<b>A</b> 發聲 → 落在 <b>Zone 內</b> → 鎖定並框住`;
+     return {levels:lv,carrier:homeC(),zoneActive:"A",interferers:out?[sp]:[],
+       sources:[{id:sp,accept:!out,reason:out?"Zone 外":undefined}],
+       camera:{mode:"zonelock",focus:"A",interferers:out?[sp]:[],preset:"P2 鎖定"},
+       track: out?`Zone P2 鎖定 · <b>畫面不動</b>(${sp} 在區外)`:"Zone P2 鎖定 · 框住 A",
+       phase:ph,
+       effect: out?`${sp} 觸發但在 Zone 外 → 畫面不動,不搶鏡`:"A 在 Zone 內 → 正常框住"};}},
+
+4:{name:"講者走動跟蹤",fn:"講者跟蹤功能(聲音觸發 → AI 人形追蹤)",models:[100,200],dur:18,
+   fixture:"T 沿 Zone A <b>彎曲路徑</b>來回移動並持續講話(中途<b>停講 3 秒</b>)",
+   effect:"<b>100:</b>聲觸發 → 叫 Zone Preset → YOLO 接手(慢一拍,<b>只鎖最大的人</b>)&nbsp;|&nbsp; <b>200:</b>聲音定位算絕對座標 → <b>absposition 直接轉向</b> → AI 微調(更快更準)",
+   update(t){const tt=t%18;
+     const kOf=u=>0.5-0.5*Math.cos(2*Math.PI*u);       // 來回(端點慢、中段快)
+     const k=kOf(tt/18);
+     // 三段式:①0~1.2s 聲觸發(鏡頭仍廣角) ②1.2~2.6s 叫出 Zone Preset(跳到預設構圖,人未置中)
+     //         ③2.6s 起 AI 接手,以時間常數 0.85s 平滑拉入 → 慢一拍後把人確實置中
+     const T_SND=1.2, T_PRE=2.6, kPreset=0.5, TAU=0.85;
+     let stage,kCam,zoom;
+     if(tt<T_SND){ stage="snd"; kCam=kPreset; zoom=0.55; }        // 廣角,尚未動作
+     else if(tt<T_PRE){ stage="preset"; kCam=kPreset; zoom=1; }   // 跳到 Preset 構圖
+     else{ stage="ai"; zoom=1;
+       const kTrack=kOf(((((tt-0.65)/18)%1)+1)%1);                // 穩態:落後 0.65s
+       const blend=1-Math.exp(-(tt-T_PRE)/TAU);                   // 平滑接手(非跳變)
+       kCam=kPreset+(kTrack-kPreset)*blend; }
+     const off=k-kCam;
+     const talking=!(tt>=7&&tt<10);                     // 停講 3s:證明追蹤不靠聲音
+     const lv={};if(talking)lv["T"]=0.6+0.4*Math.abs(Math.sin(t*5));
+     let ph,trk,pre;
+     const is200=(model===200);
+     if(stage==="snd"){
+       ph="T 發聲 → <b>聲音觸發</b>,先判斷聲源位置(鏡頭仍在廣角)";
+       trk="① 聲音觸發中"; pre="廣角"; }
+     else if(stage==="preset"){
+       ph = is200 ? "② 聲音定位算出<b>絕對座標</b> → 以 <b>absposition 指令</b>直接把鏡頭轉到該位置"
+                  : "② <b>叫出 Zone A 的 Preset</b> → 鏡頭跳到預設構圖,<b>人還沒被置中</b>";
+       trk = is200 ? "② <b>absposition 指令</b>轉向" : "② <b>Preset 跳位</b>(尚未跟人)";
+       pre = is200 ? "absposition" : "PA · Zone A"; }
+     else if(talking){
+       ph = is200 ? "③ <b>AI 接手微調</b> → 小幅修正把人維持在畫面中央"
+                  : "③ <b>YOLO AI 接手</b>(慢一拍)→ 拉回中央;<b>但只鎖畫面中最大的人</b>";
+       trk = is200 ? "③ <b>AI 微調</b>(發聲中)" : "③ <b>YOLO 追蹤</b>(只認最大的人)";
+       pre = is200 ? "absposition → AI 微調" : "PA → YOLO"; }
+     else {
+       ph = "T <b>停止發聲</b>(無聲源)→ 仍由 <b>AI 人形追蹤</b>咬住目標不放";
+       trk = is200 ? "③ <b>AI 微調</b>(無聲源)" : "③ <b>YOLO 追蹤</b>(無聲源)";
+       pre = is200 ? "absposition → AI 微調" : "PA → YOLO"; }
+     return {levels:lv,carrier:onTrack(k,talking),
+       sources: talking?[{id:"T",accept:true}]:[],
+       camera:{mode:"tracking",pos:k,aim:kCam,off:off,zoom:zoom,preset:pre,talking:talking,
+               ai:stage==="ai",stage:stage},
+       track:trk+` · 置中誤差 ${(Math.abs(off)*100).toFixed(0)}%`, phase:ph,
+       effect: stage==="snd" ? "① 聲音觸發:判斷聲源位置"
+             : stage==="preset" ? (is200 ? "② absposition:依絕對座標直接轉向,快又準"
+                                          : "② 叫出 Zone Preset:鏡頭先跳到預設構圖,人尚未置中")
+             : (is200 ? "③ AI 微調:小幅修正維持置中(比 100 更快更準)"
+                      : "③ YOLO 接手:慢一拍拉回中央,只鎖畫面中最大的人")};}},
+
+6:{name:"無人位置雜音抗干擾",fn:"BC200 判定聲音是否人聲發出",models:[200],dur:14,
+   fixture:"於無人的位置製造有感噪音(該位置刻意不放人偶)",
+   effect:"聲音點出現但無人形 → 攝像機不被噪音干擾",
+   update(t){const tt=t%14;const nz=(tt>=2.5&&tt<10);
+     const lv={};if(tt<12)lv["A"]=0.6+0.4*Math.abs(Math.sin(t*6));
+     const src=[{id:"A",accept:true}];
+     if(nz)src.push({id:"NOISE",accept:false,reason:"非人聲"});
+     let ph;if(tt<2.5)ph="A 正常發言";
+       else if(tt<10)ph="無人位置發出噪音 → 有<b>聲音點</b>但<b>無人形</b> → BC200 判定<b>非人聲</b>";
+       else ph="持續鎖定 A";
+     return {levels:lv,carrier:homeC(),zoneActive:"A",noise:nz?0.5+0.5*Math.abs(Math.sin(t*9)):0,
+       sources:src,
+       camera:{mode:"noise",focus:"A",noise:nz,preset:"P2 鎖定"},
+       track:"鎖定 A(拒斥噪音)",
+       phase:ph,effect:"聲音點落在無人處 → 判非人聲,不誤觸,續框 A"};}},
+
+5:{name:"無人發言",fn:"回到廣角全景 (Back to Home)",models:[100,200],dur:20,
+   fixture:"無人說話超過 15 秒",
+   effect:"攝像機自動回到廣角全景畫面",
+   update(t){const tt=t%20;let m,ph,cd=0;
+     if(tt<2.5){m="single";ph="C 發言中";}
+     else if(tt<17.5){m="single";cd=Math.ceil(15-(tt-2.5));ph=`全場靜默,倒數 <b>${cd}s</b>`;}
+     else{m="wide";ph="回到<b>廣角全景</b>(Back to Home)";}
+     const lv={};if(tt<2.5)lv["C"]=0.6+0.4*Math.abs(Math.sin(t*6));
+     return {levels:lv,carrier:homeC(),zoneActive:tt<2.5?"C":null,
+       sources: tt<2.5?[{id:"C",accept:true}]:[],
+       camera:{mode:m,focus:"C",countdown:cd,preset:m==="wide"?"Home · 廣角":"P5 鎖定"},
+       track: m==="wide"?"已回 Home":(cd?`靜默 ${15-cd}s / 15s`:"鎖定 C"),
+       phase:ph,effect:m==="wide"?"回廣角全景 · 乾淨起點":"畫面維持,倒數靜默中"};}},
+
+7:{name:"起立坐下都追得到",fn:"BC200 AI 人形動態取景(免預設 Preset)",models:[200],dur:16,
+   fixture:"A 坐著發言 → <b>起立</b> → 再<b>坐下</b>(全程<b>不切換任何 Preset</b>)",
+   effect:"免 Preset:AI 用<b>俯仰+變焦</b>重新取景,起立坐下都<b>頭腳完整不被切</b>;固定 Preset 死框則會砍頭",
+   update(t){const tt=t%16;
+     const ss=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+     const lvl=u=>{                                  // 0 = 坐,1 = 站
+       if(u<5)return 0;
+       if(u<6)return ss(u-5);                        // 起立(1s)
+       if(u<11)return 1;
+       if(u<12)return 1-ss(u-11);                    // 坐下(1s)
+       return 0;};
+     const h=lvl(tt), aim=lvl(Math.max(0,tt-0.5));   // 鏡頭俯仰落後 0.5s
+     const offY=h-aim;
+     const posture=h>0.5?"stand":"sit";
+     // 變焦:人站起來變高 → 必須 ZOOM OUT 才框得住;AI 讓主體始終佔畫面 72%
+     const bodyOf=u=>0.58+0.34*lvl(u);               // 人的實際高度佔比(坐 0.58 / 站 0.92)
+     const zTgt =u=>0.72/bodyOf(u);                  // 想維持的取景倍率
+     const zoom = zTgt(Math.max(0,tt-0.5));          // 變焦同樣落後 0.5s
+     const figH = bodyOf(tt)*zoom;                   // 實際在畫面上的高度佔比
+     const zooming=Math.abs(figH-0.72)>0.03;
+     const moving=Math.abs(offY)>0.03||zooming;
+     const mh=(1.10+0.40*h)/U2M;                     // 嘴高隨姿勢連續變化
+     const lv={A:0.6+0.4*Math.abs(Math.sin(t*6))};
+     let note;
+     if(moving&&offY>0) note="<b>起立中</b> → 人變高且升到中心線上方,鏡頭<b>往上移 + ZOOM OUT</b> 重新取景";
+     else if(moving)    note="<b>坐下中</b> → 人變矮且落到中心線下方,鏡頭<b>往下移 + ZOOM IN</b> 重新取景";
+     else note=(posture==="stand"?"<b>站姿</b>":"<b>坐姿</b>")+"穩定 —— AI 已用<b>俯仰+變焦</b>把人重新置中並填滿構圖";
+     return {levels:lv,carrier:homeC(),postures:{A:posture},
+       sources:[{id:"A",accept:true,mh:mh}],
+       camera:{mode:"posture",focus:"A",posture:posture,h:h,aim:aim,offY:offY,
+               zoom:zoom,figH:figH,preset:"AI 動態 · 免 Preset"},
+       track:`AI 取景 · ${posture==="stand"?"站姿":"坐姿"} · 變焦 ×${zoom.toFixed(2)}`
+             +(moving?` · ${offY>0?"上移":offY<0?"下移":""}${zooming?(figH>0.72?"+ZOOM OUT":"+ZOOM IN"):""}中`:" · 已穩定"),
+       phase:note,
+       effect: moving?"俯仰+變焦同時作動,把起立/坐下的人重新置中並維持構圖大小"
+                     :"人已置中且大小一致;固定 Preset 是死框,做不到這件事"};}},
+};
+/* 載具 T = 前方講者:一開始就在 Zone A 就位(不移動、不發聲),不是縮在角落待命 */
+function homeC(){const p=pathPoint(0.5);return {x:p.x,y:p.y,onTrack:true,active:false};}
+/* 彎曲循線路徑:u∈[0,1] → 房間座標(S 形,考驗 5 路循跡與 AI 追蹤) */
+function pathPoint(u){
+  return {x:W.track.x0+(W.track.x1-W.track.x0)*u,
+          y:W.track.y+W.track.amp*Math.sin(2*Math.PI*u)};
+}
+function onTrack(u,active){const p=pathPoint(u);return {x:p.x,y:p.y,onTrack:true,active:active};}
+
+/* ================= 狀態 ================= */
+let model=100, cur=1, mode="2d", playing=false, clock=0, speed=1, lastTs=0, spkHm=1.5;
+function visibleKeys(){return Object.keys(SC).filter(k=>SC[k].models.includes(model));}
+
+/* ================= 投影 ================= */
+let P2={ox:0,oy:0,s:1}, P3={cx:0,cy:0,s:1};
+function fit(cv){
+  const W_=cv.width,H_=cv.height,pad=26;
+  P2.s=Math.min((W_-2*pad)/100,(H_-2*pad)/100);
+  P2.ox=(W_-P2.s*100)/2; P2.oy=(H_-P2.s*100)/2;
+  P3.s=Math.min((W_-2*pad)/173.2,(H_-2*pad)/128);
+  P3.cx=W_/2; P3.cy=H_/2;
+}
+function proj(rx_,ry_,z){
+  z=z||0;
+  if(mode==="2d")return {x:P2.ox+rx_*P2.s,y:P2.oy+ry_*P2.s};
+  const u=rx_-50,v=ry_-50;
+  const ix=(u-v)*COS30, iy=(u+v)*SIN30-z;
+  return {x:P3.cx+ix*P3.s, y:P3.cy+(iy+13)*P3.s};
+}
+
+/* ================= 房間 ================= */
+const roomCv=document.getElementById("room"), rx=roomCv.getContext("2d");
+const FONT="'Microsoft JhengHei',sans-serif";
+function poly(ctx,pts,fill,stroke,w){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w||1;ctx.stroke();}}
+function rectPts(r){return [proj(r.x0,r.y0),proj(r.x1,r.y0),proj(r.x1,r.y1),proj(r.x0,r.y1)];}
+function floorCircle(cx,cy,r){const p=[];for(let i=0;i<=28;i++){const a=i/28*2*Math.PI;p.push(proj(cx+r*Math.cos(a),cy+r*Math.sin(a)));}return p;}
+
+function drawRoom(st){
+  fit(roomCv);
+  rx.clearRect(0,0,roomCv.width,roomCv.height);
+
+  if(mode==="3d"){
+    poly(rx,rectPts(W.room),"#f4f6f9","#cdd4de",1.5);
+    const wall=(a,b)=>{const p0=proj(a.x,a.y,0),p1=proj(b.x,b.y,0),p2=proj(b.x,b.y,WH),p3=proj(a.x,a.y,WH);
+      poly(rx,[p0,p1,p2,p3],"rgba(203,212,222,.35)","#cdd4de",1);};
+    wall({x:W.room.x0,y:W.room.y1},{x:W.room.x0,y:W.room.y0});
+    wall({x:W.room.x0,y:W.room.y0},{x:W.room.x1,y:W.room.y0});
+  }else{
+    poly(rx,rectPts(W.room),"#fafbfd","#b8c1cd",2);
+  }
+
+  // Zone A 走動帶(T 專用)
+  poly(rx,rectPts(W.zoneA),"#f9dcdc",null,0);
+  const za=proj(W.zoneA.x1-6,W.zoneA.y0+3);rx.fillStyle="#1f4fd8";rx.font="bold 12px "+FONT;rx.textAlign="right";rx.fillText("Zone A(走動)",za.x,za.y);
+  // 每個位置都「可劃 Zone」:未啟用=淡虛線框;啟用中=金色實線(只有它會被採信)
+  rx.setLineDash([4,4]);
+  SEATS.forEach(s=>{
+    if(st.zoneActive===s.id) return;
+    poly(rx,rectPts(zoneOf(s)),"rgba(31,79,216,.04)","rgba(110,140,200,.55)",1);
+  });
+  rx.setLineDash([]);
+  const az=st.zoneActive?seat(st.zoneActive):null;
+  if(az){
+    poly(rx,rectPts(zoneOf(az)),"rgba(201,138,30,.28)","#c08a1e",2.5);
+    const c=proj(az.x,az.y-ZR);
+    rx.fillStyle="#a06b12";rx.font="bold 10px "+FONT;rx.textAlign="center";
+    rx.fillText("Zone "+az.preset+(az.chair?" · 主席":"")+" ✓啟用中",c.x,c.y-3);
+  }
+
+  const sc=W.screen;const spx=[proj(sc.x0,sc.y1),proj(sc.x1,sc.y1),proj(sc.x1-3,sc.y0),proj(sc.x0+3,sc.y0)];
+  poly(rx,spx,"#ffffff","#334",1.5);
+  const scc=proj((sc.x0+sc.x1)/2,(sc.y0+sc.y1)/2);rx.fillStyle="#334";rx.font="11px "+FONT;rx.textAlign="center";rx.fillText("螢幕",scc.x,scc.y);
+
+  rx.strokeStyle="#c08a1e";rx.lineWidth=3;rx.beginPath();
+  for(let i=0;i<=48;i++){const p=pathPoint(i/48),q=proj(p.x,p.y);i?rx.lineTo(q.x,q.y):rx.moveTo(q.x,q.y);}
+  rx.stroke();
+  rx.fillStyle="#c08a1e";[0,1].forEach(u=>{const p=pathPoint(u),q=proj(p.x,p.y);
+    rx.beginPath();rx.arc(q.x,q.y,4,0,7);rx.fill();});
+  const tp=pathPoint(0.5),tc=proj(tp.x,tp.y+6);
+  rx.font="11px "+FONT;rx.textAlign="center";rx.fillText("白色循線(彎曲路徑)",tc.x,tc.y);
+
+  if(mode==="3d"){
+    const tb=W.table;
+    const top=[proj(tb.x0,tb.y0,TH),proj(tb.x1,tb.y0,TH),proj(tb.x1,tb.y1,TH),proj(tb.x0,tb.y1,TH)];
+    const sideR=[proj(tb.x1,tb.y0,0),proj(tb.x1,tb.y1,0),proj(tb.x1,tb.y1,TH),proj(tb.x1,tb.y0,TH)];
+    const sideF=[proj(tb.x0,tb.y1,0),proj(tb.x1,tb.y1,0),proj(tb.x1,tb.y1,TH),proj(tb.x0,tb.y1,TH)];
+    poly(rx,sideR,"#c78b4e",null,0);poly(rx,sideF,"#b87e42",null,0);poly(rx,top,"#e3a86a","#c78b4e",1);
+    W.mics.forEach(m=>{const p=proj(m.x,m.y,TH);rx.fillStyle="#fff";rx.strokeStyle="#c9ced6";rx.lineWidth=1.5;
+      rx.beginPath();rx.rect(p.x-14,p.y-14,28,28);rx.fill();rx.stroke();});
+  }else{
+    poly(rx,rectPts(W.table),"#e3a86a","#c78b4e",1);
+    W.mics.forEach(m=>{const p=proj(m.x,m.y);rx.fillStyle="#fff";rx.strokeStyle="#c9ced6";rx.lineWidth=1.5;
+      rx.beginPath();rx.rect(p.x-15,p.y-15,30,30);rx.fill();rx.stroke();});
+  }
+  const mc=proj(49,50);rx.fillStyle="#7a5a30";rx.font="bold 11px "+FONT;rx.textAlign="center";rx.fillText("Ceiling MIC ×2",mc.x,mc.y);
+
+  // 無人偶的座位(噪音位/空位)畫成灰色椅子 + 標示位置編號
+  SEATS.filter(s=>!s.standee).forEach(s=>{const p=proj(s.x,s.y);rx.fillStyle="#b6bec9";
+    rx.beginPath();rx.rect(p.x-11,p.y-9,22,18);rx.fill();
+    const lp=proj(s.x,s.y,0);rx.fillStyle="#8a94a3";rx.font="10px "+FONT;rx.textAlign="center";
+    rx.fillText((s.id==="NOISE"?"噪音位·":"空位·")+s.preset,lp.x,lp.y+(mode==="3d"?14:22));});
+
+  // 聲波環
+  Object.keys(st.levels).forEach(id=>{
+    const pe = id==="T" ? st.carrier : W.people[id]; if(!pe)return;
+    ring(pe.x,pe.y,st.levels[id]);
+  });
+  if(st.noise) ring(W.noise.x,W.noise.y,st.noise,true);
+
+  // 人形(4 個人偶 A/B/C/D)
+  ["A","B","C","D"].forEach(id=>{
+    const pe=W.people[id];
+    person(pe.x,pe.y,id,(st.levels[id]||0)>0.15,st.postures&&st.postures[id]);
+  });
+  (st.interferers||[]).forEach(id=>{const pe=W.people[id];const p=proj(pe.x,pe.y,mode==="3d"?PH+4:0);
+    rx.fillStyle="#e5484d";rx.font="bold 11px "+FONT;rx.textAlign="center";rx.fillText("✕ Zone 外·忽略",p.x,p.y-18);});
+  if(st.noise){const p=proj(W.noise.x,W.noise.y,0);
+    rx.strokeStyle="#e5484d";rx.setLineDash([4,3]);rx.lineWidth=2;
+    rx.beginPath();rx.arc(p.x,p.y,15,0,7);rx.stroke();rx.setLineDash([]);
+    rx.fillStyle="#e5484d";rx.font="10px "+FONT;rx.textAlign="center";rx.fillText("噪音位·無人偶",p.x,p.y+28);}
+
+  const car=st.carrier;
+  carrier(car.x,car.y,car.active);
+
+  drawSound(st);
+  drawCams(st);
+}
+
+/* ===== 三支相機(依實際布置圖):各司其職,畫出機身與目前指向 =====
+   TR41 右上 → 打座位區;TR41 左下 → 打前方講者(Zone A);R31 下方中央 → 全景 */
+/* PBP 是「幾個人就幾支相機」→ 共 4 支節目相機:
+   前方 3 支(打座位區 A/C/B)+ 後方左下角 1 支(打前方講者 T);R31 BTS 後方中央常開全場概覽 */
+const CAMS=[
+  {id:"c1", assign:"B", x:18, y:9,  z:26, label:"TR41-1", role:"打 B(右半·對角)"},
+  {id:"c2", assign:"C", x:49, y:9,  z:26, label:"TR41-2", role:"打 C(主席·正面)"},
+  {id:"c3", assign:"A", x:80, y:9,  z:26, label:"TR41-3", role:"打 A(左半·對角)"},
+  {id:"c4", assign:"T", x:11, y:89, z:26, label:"TR41-4", role:"打 T(前方講者)"},
+  {id:"bts",assign:null,x:49, y:94, z:20, label:"R31 BTS", role:"全場概覽·常開", ctx:true},
+];
+function camOf(id){const c=CAMS.find(c=>c.assign===id);return c?c.label:null;}
+function posOf(st,id){return (id==="T")?st.carrier:W.people[id];}
+/* 目前有哪幾位在節目畫面上 → 就有幾支相機同時取像 */
+function activeTargets(st){
+  const cam=st.camera;
+  if(cam.mode==="wide")     return [];
+  if(cam.mode==="pbp")      return cam.subjects.slice();
+  if(cam.mode==="tracking") return ["T"];
+  return cam.focus?[cam.focus]:[];
+}
+function drawCams(st){
+  const tg=activeTargets(st), isWide=(st.camera.mode==="wide");
+  CAMS.forEach(c=>{
+    const on = c.ctx ? isWide : (tg.indexOf(c.assign)>=0);
+    const base=proj(c.x,c.y,0), body=proj(c.x,c.y,c.z);
+    if(mode==="3d"){
+      rx.strokeStyle="#9aa3ae";rx.lineWidth=on?3:2;
+      rx.beginPath();rx.moveTo(base.x,base.y);rx.lineTo(body.x,body.y);rx.stroke();
+    }
+    if(c.ctx){                                         // BTS:常開的全場概覽
+      const cp=proj(49,50,0);
+      const ang=Math.atan2(cp.y-body.y,cp.x-body.x), len=Math.hypot(cp.x-body.x,cp.y-body.y)*1.6;
+      const half=0.62;
+      rx.beginPath();rx.moveTo(body.x,body.y);
+      rx.lineTo(body.x+Math.cos(ang-half)*len,body.y+Math.sin(ang-half)*len);
+      rx.lineTo(body.x+Math.cos(ang+half)*len,body.y+Math.sin(ang+half)*len);
+      rx.closePath();
+      rx.fillStyle="rgba(29,122,79,.07)";rx.fill();
+      rx.strokeStyle="rgba(29,122,79,.32)";rx.lineWidth=1;rx.setLineDash([4,4]);rx.stroke();rx.setLineDash([]);
+    }
+    if(on){                                            // 取像中:畫出實際指向
+      let p;
+      if(c.ctx) p={x:49,y:50};
+      else if(c.assign==="T"&&st.camera.mode==="tracking")
+        p=pathPoint(st.camera.aim!==undefined?st.camera.aim:st.camera.pos);   // 含跟隨延遲
+      else p=posOf(st,c.assign);
+      if(p){
+        const tp=proj(p.x,p.y,0);
+        const ang=Math.atan2(tp.y-body.y,tp.x-body.x), len=Math.hypot(tp.x-body.x,tp.y-body.y);
+        const half=c.ctx?0.42:0.17;
+        rx.beginPath();rx.moveTo(body.x,body.y);
+        rx.lineTo(body.x+Math.cos(ang-half)*len,body.y+Math.sin(ang-half)*len);
+        rx.lineTo(body.x+Math.cos(ang+half)*len,body.y+Math.sin(ang+half)*len);
+        rx.closePath();
+        rx.fillStyle="rgba(11,95,165,.13)";rx.fill();
+        rx.strokeStyle="rgba(11,95,165,.5)";rx.lineWidth=1;rx.stroke();
+        rx.strokeStyle="#0b5fa5";rx.lineWidth=1.5;rx.setLineDash([6,4]);
+        rx.beginPath();rx.moveTo(body.x,body.y);rx.lineTo(tp.x,tp.y);rx.stroke();rx.setLineDash([]);
+        rx.strokeStyle="#0b5fa5";rx.lineWidth=2;
+        rx.beginPath();rx.arc(tp.x,tp.y,7,0,7);rx.stroke();
+        rx.beginPath();rx.moveTo(tp.x-11,tp.y);rx.lineTo(tp.x-4,tp.y);
+        rx.moveTo(tp.x+4,tp.y);rx.lineTo(tp.x+11,tp.y);rx.stroke();
+      }
+    }
+    rx.fillStyle=on?"#0b5fa5":"#5b6878";                // 機身
+    rx.beginPath();rx.roundRect(body.x-12,body.y-8,24,16,4);rx.fill();
+    rx.fillStyle=on?"#cfe6ff":"#aab4c0";rx.beginPath();rx.arc(body.x,body.y,4.5,0,7);rx.fill();
+    rx.fillStyle=on?"#0b5fa5":"#7a8595";rx.font=(on?"bold ":"")+"9px "+FONT;rx.textAlign="center";
+    rx.fillText(c.label+(on?" ●":""),body.x,body.y-12);
+    rx.fillStyle=on?"#0b5fa5":"#98a2b0";rx.font="8px "+FONT;
+    rx.fillText(c.role,body.x,body.y+19);
+  });
+}
+
+function ring(cx,cy,level,noise){
+  const base=level||0;if(base<=0)return;
+  for(let k=0;k<3;k++){
+    const rr=4+k*3+(clock*8)%9;
+    rx.globalAlpha=Math.max(0,0.5-k*0.15)*(0.4+0.6*base);
+    poly(rx,floorCircle(cx,cy,rr),null,noise?"#e5484d":"#c08a1e",2);
+  }
+  rx.globalAlpha=1;
+}
+
+/* --- 聲音點繪製(參考 install2 sim 慣例) --- */
+function drawSound(st){
+  const mp=proj(MIC.x,MIC.y,0);
+  rx.beginPath();rx.arc(mp.x,mp.y,6,0,7);rx.fillStyle="#f6993f";rx.fill();
+  rx.strokeStyle="#fff";rx.lineWidth=1.5;rx.stroke();
+
+  (st.sound||[]).forEach(s=>{
+    const sp=proj(s.sx,s.sy,0), tp=proj(s.tx,s.ty,0);
+    // 漂移連線
+    if(!s.noPerson){
+      rx.setLineDash([3,3]);rx.strokeStyle="rgba(150,160,175,.7)";rx.lineWidth=1;
+      rx.beginPath();rx.moveTo(tp.x,tp.y);rx.lineTo(sp.x,sp.y);rx.stroke();rx.setLineDash([]);
+      // 真人位置(綠):實心=被接受
+      rx.beginPath();rx.arc(tp.x,tp.y,5,0,7);
+      rx.fillStyle=s.accept?"#22a06b":"#fff";rx.fill();
+      rx.strokeStyle="#22a06b";rx.lineWidth=2;rx.stroke();
+    }
+    // 聲音點(紅):實心=採信,半透明=拒斥
+    rx.beginPath();rx.arc(sp.x,sp.y,5.5,0,7);
+    rx.fillStyle=s.accept?"#e5484d":"rgba(229,72,77,.35)";rx.fill();
+    rx.strokeStyle="#e5484d";rx.lineWidth=1.5;rx.stroke();
+    if(!s.accept){
+      rx.strokeStyle="#e5484d";rx.lineWidth=2;
+      rx.beginPath();rx.moveTo(sp.x-8,sp.y-8);rx.lineTo(sp.x+8,sp.y+8);
+      rx.moveTo(sp.x+8,sp.y-8);rx.lineTo(sp.x-8,sp.y+8);rx.stroke();
+      rx.fillStyle="#e5484d";rx.font="bold 10px "+FONT;rx.textAlign="center";
+      rx.fillText(s.reason||"忽略",sp.x,sp.y+24);
+    }else if(s.drift>0.02){
+      rx.fillStyle="#b0562a";rx.font="10px "+FONT;rx.textAlign="center";
+      rx.fillText("漂移 "+s.drift.toFixed(2)+"m",sp.x,sp.y-12);
+    }
+  });
+}
+
+/* 3D 人偶(有衣服的人台):立體感靠漸層 + 肩線 + 底座,各角度都像人 —— 取代平面立牌 */
+function mannequin(cx,cy,ph,col,speaking,label){
+  const base=proj(cx,cy,0), head=proj(cx,cy,ph), w=11*P3.s;
+  const hip=proj(cx,cy,ph*0.42), sh=proj(cx,cy,ph*0.80);
+  // 底座(人台圓盤)
+  rx.fillStyle="rgba(90,100,115,.55)";
+  rx.beginPath();rx.ellipse(base.x,base.y,w*0.52,w*0.22,0,0,7);rx.fill();
+  rx.fillStyle="rgba(0,0,0,.10)";
+  rx.beginPath();rx.ellipse(base.x,base.y+2,w*0.62,w*0.26,0,0,7);rx.fill();
+  // 立柱
+  rx.strokeStyle="rgba(120,132,150,.9)";rx.lineWidth=Math.max(2,w*0.12);
+  rx.beginPath();rx.moveTo(base.x,base.y);rx.lineTo(hip.x,hip.y);rx.stroke();
+  // 軀幹:左右漸層做出圓柱體積感
+  const g=rx.createLinearGradient(head.x-w*0.55,0,head.x+w*0.55,0);
+  const c0=speaking?"#8a5f12":"#14603c", c1=speaking?"#e0a52a":"#2fbf82", c2=speaking?"#7d550f":"#0f4d30";
+  g.addColorStop(0,c0);g.addColorStop(0.42,c1);g.addColorStop(1,c2);
+  rx.fillStyle=g;
+  rx.beginPath();
+  rx.moveTo(hip.x-w*0.34,hip.y);
+  rx.quadraticCurveTo(sh.x-w*0.56,sh.y+w*0.10, sh.x-w*0.50,sh.y);       // 左腰→左肩
+  rx.quadraticCurveTo(head.x-w*0.30,head.y+w*0.34, head.x,head.y+w*0.30);// 左肩→頸
+  rx.quadraticCurveTo(head.x+w*0.30,head.y+w*0.34, sh.x+w*0.50,sh.y);   // 頸→右肩
+  rx.quadraticCurveTo(sh.x+w*0.56,sh.y+w*0.10, hip.x+w*0.34,hip.y);     // 右肩→右腰
+  rx.closePath();rx.fill();
+  // 肩線(增加立體暗示)
+  rx.strokeStyle="rgba(255,255,255,.22)";rx.lineWidth=1.2;
+  rx.beginPath();rx.moveTo(sh.x-w*0.44,sh.y+1);rx.quadraticCurveTo(sh.x,sh.y-w*0.14,sh.x+w*0.44,sh.y+1);rx.stroke();
+  // 頭:徑向漸層球體
+  const hr=Math.max(7,w*0.36);
+  const hg=rx.createRadialGradient(head.x-hr*0.35,head.y-hr*0.35,hr*0.15,head.x,head.y,hr);
+  hg.addColorStop(0,speaking?"#ffe0a0":"#b8f0d5");hg.addColorStop(1,col);
+  rx.fillStyle=hg;rx.beginPath();rx.arc(head.x,head.y,hr,0,7);rx.fill();
+  rx.strokeStyle="rgba(0,0,0,.18)";rx.lineWidth=1;rx.stroke();
+  rx.fillStyle="#0b2018";rx.font="bold "+Math.max(10,hr*0.95)+"px "+FONT;
+  rx.textAlign="center";rx.textBaseline="middle";rx.fillText(label,head.x,head.y);rx.textBaseline="alphabetic";
+}
+
+function person(cx,cy,label,speaking,posture){
+  const col=speaking?"#c08a1e":"#22a06b";
+  const ph=(posture==="sit")?PH*0.62:PH;          // 坐姿:人偶高度降低
+  if(mode==="3d"){
+    mannequin(cx,cy,ph,col,speaking,label);
+  }else{
+    const p=proj(cx,cy);
+    rx.beginPath();rx.arc(p.x,p.y,15,0,7);
+    rx.fillStyle=speaking?"rgba(201,138,30,.18)":"#e6f4ec";rx.fill();
+    rx.strokeStyle=col;rx.lineWidth=speaking?3:2;rx.stroke();
+    rx.fillStyle=col;rx.font="bold 13px "+FONT;rx.textAlign="center";rx.textBaseline="middle";
+    rx.fillText(label,p.x,p.y);rx.textBaseline="alphabetic";
+  }
+  const lp=proj(cx,cy,0);
+  const chair=W.people[label]&&W.people[label].chair;
+  const pos=posture?(posture==="sit"?" · 坐":" · 站"):"";
+  rx.fillStyle=posture?"#0b5fa5":(chair?"#a06b12":"#8a5b2a");
+  rx.font=((chair||posture)?"bold ":"")+"10px "+FONT;rx.textAlign="center";
+  rx.fillText((chair?"主席 ":"Lecturer ")+label+" · "+W.people[label].preset+pos,lp.x,lp.y+(mode==="3d"?16:30));
+}
+
+/* 車上的 3D 人偶(藍色系,代表 Lecturer T) */
+function mannequinT(cx,cy,ph,active){
+  const foot=proj(cx,cy,4), head=proj(cx,cy,ph), w=11*P3.s;
+  const hip=proj(cx,cy,ph*0.44), sh=proj(cx,cy,ph*0.80);
+  rx.strokeStyle="rgba(120,132,150,.9)";rx.lineWidth=Math.max(2,w*0.12);
+  rx.beginPath();rx.moveTo(foot.x,foot.y);rx.lineTo(hip.x,hip.y);rx.stroke();
+  const g=rx.createLinearGradient(head.x-w*0.55,0,head.x+w*0.55,0);
+  const c0=active?"#0a3f74":"#5a6676", c1=active?"#3f92e0":"#98a4b4", c2=active?"#08355f":"#4b5666";
+  g.addColorStop(0,c0);g.addColorStop(0.42,c1);g.addColorStop(1,c2);
+  rx.fillStyle=g;
+  rx.beginPath();
+  rx.moveTo(hip.x-w*0.34,hip.y);
+  rx.quadraticCurveTo(sh.x-w*0.56,sh.y+w*0.10, sh.x-w*0.50,sh.y);
+  rx.quadraticCurveTo(head.x-w*0.30,head.y+w*0.34, head.x,head.y+w*0.30);
+  rx.quadraticCurveTo(head.x+w*0.30,head.y+w*0.34, sh.x+w*0.50,sh.y);
+  rx.quadraticCurveTo(sh.x+w*0.56,sh.y+w*0.10, hip.x+w*0.34,hip.y);
+  rx.closePath();rx.fill();
+  rx.strokeStyle="rgba(255,255,255,.22)";rx.lineWidth=1.2;
+  rx.beginPath();rx.moveTo(sh.x-w*0.44,sh.y+1);rx.quadraticCurveTo(sh.x,sh.y-w*0.14,sh.x+w*0.44,sh.y+1);rx.stroke();
+  const hr=Math.max(7,w*0.36);
+  const hg=rx.createRadialGradient(head.x-hr*0.35,head.y-hr*0.35,hr*0.15,head.x,head.y,hr);
+  hg.addColorStop(0,active?"#cfe6ff":"#d6dce4");hg.addColorStop(1,active?"#0b5fa5":"#8a94a3");
+  rx.fillStyle=hg;rx.beginPath();rx.arc(head.x,head.y,hr,0,7);rx.fill();
+  rx.strokeStyle="rgba(0,0,0,.18)";rx.lineWidth=1;rx.stroke();
+  rx.fillStyle="#fff";rx.font="bold "+Math.max(10,hr*0.95)+"px "+FONT;
+  rx.textAlign="center";rx.textBaseline="middle";rx.fillText("T",head.x,head.y);rx.textBaseline="alphabetic";
+}
+
+function carrier(cx,cy,active){
+  if(mode==="3d"){
+    const b0=proj(cx-4,cy,0),b1=proj(cx+4,cy,0),b2=proj(cx+4,cy,4),b3=proj(cx-4,cy,4);
+    poly(rx,[b0,b1,b2,b3],"#0b5fa5",null,0);      // 底盤
+    mannequinT(cx,cy,PH,active);                  // 車上 3D 人偶
+  }else{
+    const p=proj(cx,cy);
+    rx.fillStyle=active?"#0b5fa5":"#8a94a3";
+    rx.beginPath();rx.roundRect(p.x-13,p.y-9,26,18,4);rx.fill();
+    rx.fillStyle="#17212f";[-7,7].forEach(dx=>{rx.beginPath();rx.arc(p.x+dx,p.y+11,3.5,0,7);rx.fill();});
+    rx.fillStyle="#fff";rx.font="bold 12px "+FONT;rx.textAlign="center";rx.textBaseline="middle";rx.fillText("T",p.x,p.y);rx.textBaseline="alphabetic";
+  }
+  const lp=proj(cx,cy,0);
+  rx.fillStyle=active?"#0b5fa5":"#8a94a3";rx.font="10px "+FONT;rx.textAlign="center";
+  rx.fillText(active?"Lecturer T(載具·發聲中)":"Lecturer T(載具·就位未發聲)",lp.x,lp.y+(mode==="3d"?18:-20));
+}
+
+/* ================= CC Pro 輸出畫面 ================= */
+const monCv=document.getElementById("monitor"), mx=monCv.getContext("2d");
+function drawMonitor(st){
+  const W_=monCv.width,H_=monCv.height;
+  mx.clearRect(0,0,W_,H_);mx.fillStyle="#0b1220";mx.fillRect(0,0,W_,H_);
+  const cam=st.camera, top=34, bot=30;
+  const area={x:8,y:top,w:W_-16,h:H_-top-bot};
+
+  if(cam.mode==="single"||cam.mode==="noise"||cam.mode==="zonelock"){
+    tile(area,cam.focus,st.levels[cam.focus]||0,cam);
+  }else if(cam.mode==="tracking"){
+    trackTile(area,cam.pos,st.levels["T"]||0,cam);
+  }else if(cam.mode==="pbp"){
+    pbpLayout(area,cam).forEach(r=>tile(r.a,r.id,st.levels[r.id]||0,cam));
+  }else if(cam.mode==="posture"){
+    postureTile(area,cam.focus,st.levels[cam.focus]||0,cam);
+  }else if(cam.mode==="wide"){ wideTile(area); }
+
+  mx.fillStyle="#e5eefc";mx.font="bold 13px "+FONT;mx.textAlign="left";mx.fillText("CC Pro "+model,14,22);
+  mx.fillStyle="#ff5a5a";mx.beginPath();mx.arc(96,17,5,0,7);mx.fill();
+  mx.fillStyle="#e5eefc";mx.font="12px "+FONT;mx.fillText("REC",106,22);
+  const tg=activeTargets(st);
+  let srcTxt="—";
+  if(cam.mode==="wide") srcTxt="R31 BTS 全場概覽";
+  else if(tg.length>1)  srcTxt=tg.length+" 支相機同時取像("+tg.map(camOf).join("·")+")";
+  else if(tg.length===1){const c0=CAMS.find(c=>c.assign===tg[0]);
+    srcTxt=c0?c0.label+" "+c0.role:"—";}
+  mx.fillStyle="#7fb2f0";mx.font="11px "+FONT;mx.textAlign="left";
+  mx.fillText("訊號源:"+srcTxt,146,22);
+  mx.textAlign="right";mx.fillStyle="#9fb3d0";mx.font="12px "+FONT;
+  mx.fillText("PRESET "+(cam.preset||"—"),W_-14,22);
+  mx.textAlign="center";mx.fillStyle="#cfe0f5";mx.font="12px "+FONT;
+  mx.fillText(strip(st.effect),W_/2,H_-11);
+}
+function strip(s){return String(s).replace(/<[^>]+>/g,"");}
+/* PBP 版面:2 人左右對分;3 人「新加入者在上方整排 + 下方兩人」;4 人 2×2 塞進 16:9 */
+function pbpLayout(a,cam){
+  const s=cam.subjects, n=s.length, g=6;
+  if(n<=2){
+    const w=(a.w-g*(n-1))/n;
+    return s.map((id,i)=>({id:id,a:{x:a.x+i*(w+g),y:a.y,w:w,h:a.h}}));
+  }
+  const hh=(a.h-g)/2, w2=(a.w-g)/2;
+  if(n===3){
+    const nw=cam.newest||s[s.length-1];          // 最新加入者 → 上方
+    const ot=s.filter(id=>id!==nw);
+    return [
+      {id:nw,   a:{x:a.x,        y:a.y,        w:a.w, h:hh}},
+      {id:ot[0],a:{x:a.x,        y:a.y+hh+g,   w:w2,  h:hh}},
+      {id:ot[1],a:{x:a.x+w2+g,   y:a.y+hh+g,   w:w2,  h:hh}},
+    ];
+  }
+  return s.slice(0,4).map((id,i)=>({id:id,a:{
+    x:a.x+(i%2)*(w2+g), y:a.y+Math.floor(i/2)*(hh+g), w:w2, h:hh}}));
+}
+function figure(cx,cy,h,color,speaking,label){
+  const hr=h*0.16;
+  mx.fillStyle=color;mx.beginPath();mx.arc(cx,cy-h*0.32,hr,0,7);mx.fill();
+  mx.beginPath();mx.moveTo(cx-h*0.26,cy+h*0.3);mx.quadraticCurveTo(cx,cy-h*0.16,cx+h*0.26,cy+h*0.3);mx.closePath();mx.fill();
+  if(label){mx.fillStyle="#0b1220";mx.font="bold "+Math.max(11,hr*1.15)+"px "+FONT;
+    mx.textAlign="center";mx.textBaseline="middle";mx.fillText(label,cx,cy-h*0.32);mx.textBaseline="alphabetic";}
+  if(speaking){mx.strokeStyle="#ffd27a";mx.lineWidth=2;
+    for(let k=0;k<2;k++){mx.globalAlpha=0.6-k*0.25;mx.beginPath();
+      mx.arc(cx,cy-h*0.32,hr+6+k*5+(clock*12)%8,-0.7,0.7);mx.stroke();}
+    mx.globalAlpha=1;}
+}
+function plate(a,txt,level){
+  mx.fillStyle="rgba(0,0,0,.55)";mx.fillRect(a.x+6,a.y+a.h-28,a.w-12,22);
+  mx.fillStyle="#dfe9f7";mx.font="12px "+FONT;mx.textAlign="left";mx.fillText(txt,a.x+12,a.y+a.h-17);
+  const bx=a.x+12,by=a.y+a.h-13,bw=a.w-24,bh=3;
+  mx.fillStyle="rgba(255,255,255,.18)";mx.fillRect(bx,by,bw,bh);
+  mx.fillStyle=level>0.05?"#5fdd8a":"rgba(95,221,138,.25)";
+  mx.fillRect(bx,by,bw*Math.max(0,Math.min(1,level)),bh);
+}
+function tile(a,id,level,cam){
+  const g=mx.createLinearGradient(0,a.y,0,a.y+a.h);g.addColorStop(0,"#1c2b45");g.addColorStop(1,"#111c30");
+  mx.fillStyle=g;mx.fillRect(a.x,a.y,a.w,a.h);
+  const isPbp=cam&&cam.mode==="pbp";
+  const live=!isPbp||cam.active===id;              // PBP 時只有正在發聲的那格是 live
+  figure(a.x+a.w/2,a.y+a.h*0.54,a.h*0.86,id==="T"?"#7fb2f0":"#8fe3b6",level>0.15,id);
+  mx.strokeStyle=live?"#22c55e":"rgba(34,197,94,.3)";mx.lineWidth=live?2:1.5;
+  mx.strokeRect(a.x+a.w*0.2,a.y+a.h*0.12,a.w*0.6,a.h*0.72);
+  if(isPbp&&live){mx.fillStyle="#22c55e";mx.font="bold 10px "+FONT;mx.textAlign="center";
+    mx.fillText("● 發聲中",a.x+a.w/2,a.y+a.h*0.09);}
+  plate(a,(isPbp?(id+" · "+(camOf(id)||"")):("Lecturer "+id)),level);
+  if(cam&&cam.mode==="zonelock"){badge(a,"Zone 鎖定·畫面不動");
+    if(cam.interferers&&cam.interferers.length)corner(a,"Zone 外 "+cam.interferers.join("·")+" ✕");}
+  if(cam&&cam.mode==="noise"&&cam.noise){corner(a,"噪音·非人聲 ✕");}
+  if(cam&&cam.countdown){mx.fillStyle="rgba(255,255,255,.9)";mx.font="bold 30px "+FONT;mx.textAlign="center";mx.fillText(cam.countdown+"s",a.x+a.w/2,a.y+36);}
+}
+function badge(a,txt){const w=Math.max(mx.measureText(txt).width+22,86);
+  mx.fillStyle="rgba(34,197,94,.9)";mx.fillRect(a.x+a.w-w-8,a.y+8,w,20);
+  mx.fillStyle="#04240f";mx.font="bold 11px "+FONT;mx.textAlign="center";mx.fillText(txt,a.x+a.w-8-w/2,a.y+22);}
+function corner(a,txt){mx.font="bold 11px "+FONT;const w=Math.max(mx.measureText(txt).width+18,96);
+  mx.fillStyle="rgba(229,72,77,.92)";mx.fillRect(a.x+8,a.y+8,w,20);
+  mx.fillStyle="#fff";mx.textAlign="left";mx.fillText(txt,a.x+16,a.y+22);}
+function trackTile(a,pos,level,cam){
+  const g=mx.createLinearGradient(0,a.y,0,a.y+a.h);g.addColorStop(0,"#1c2b45");g.addColorStop(1,"#111c30");
+  mx.fillStyle=g;mx.fillRect(a.x,a.y,a.w,a.h);
+  mx.save();mx.beginPath();mx.rect(a.x,a.y,a.w,a.h);mx.clip();
+  // 隨鏡頭平移的背景參考線 → 看得出鏡頭真的在轉
+  const step=a.w/5, scroll=(cam.aim||0)*a.w*2.2;
+  mx.strokeStyle="rgba(255,255,255,.08)";mx.lineWidth=1;
+  for(let i=-2;i<=8;i++){const gx=a.x+i*step-(scroll%step);
+    mx.beginPath();mx.moveTo(gx,a.y);mx.lineTo(gx,a.y+a.h);mx.stroke();}
+  mx.strokeStyle="rgba(255,255,255,.10)";
+  mx.beginPath();mx.moveTo(a.x,a.y+a.h*0.80);mx.lineTo(a.x+a.w,a.y+a.h*0.80);mx.stroke();
+  // 人物:AI 接手後維持置中;廣角/Preset 階段則明顯不置中
+  const z=cam.zoom||1;
+  const dx=Math.max(-0.34,Math.min(0.34,(cam.off||0)*0.55*z));
+  const cx=a.x+a.w*(0.5+dx), cy=a.y+a.h*0.54, fh=a.h*0.86*z;
+  figure(cx,cy,fh,"#7fb2f0",level>0.15,"T");
+  mx.strokeStyle=cam.ai?"#22c55e":"rgba(34,197,94,.45)";mx.lineWidth=cam.ai?2.5:1.5;
+  mx.strokeRect(cx-a.w*0.13*z,cy-fh*0.5,a.w*0.26*z,fh*0.95);
+  mx.restore();
+  // 固定的畫面中心線:人物偏離即代表鏡頭正在跟隨
+  mx.strokeStyle="rgba(255,255,255,.32)";mx.setLineDash([4,4]);mx.lineWidth=1;
+  mx.beginPath();mx.moveTo(a.x+a.w/2,a.y+4);mx.lineTo(a.x+a.w/2,a.y+a.h-30);mx.stroke();mx.setLineDash([]);
+  mx.fillStyle="rgba(255,255,255,.45)";mx.font="9px "+FONT;mx.textAlign="center";
+  mx.fillText("畫面中心",a.x+a.w/2,a.y+a.h-34);
+  if(Math.abs(cam.off||0)>0.03){
+    mx.fillStyle="#ffd27a";mx.font="bold 10px "+FONT;mx.textAlign="center";
+    mx.fillText(cam.off>0?"鏡頭右移跟隨 →":"← 鏡頭左移跟隨",a.x+a.w/2,a.y+18);
+  }
+  plate(a,"Lecturer T · "+(cam.talking?"發聲中":"已停止發聲(無聲源)"),level);
+  badge(a, cam.stage==="snd" ? "① 聲音觸發"
+         : cam.stage==="preset" ? (model===200?"② absposition 轉向":"② Preset 跳位")
+         : (model===200?"③ AI 微調":"③ YOLO 追蹤"));
+}
+/* 免 Preset:AI 依實際人形(坐/站)動態取景 */
+function postureTile(a,id,level,cam){
+  const g=mx.createLinearGradient(0,a.y,0,a.y+a.h);g.addColorStop(0,"#1c2b45");g.addColorStop(1,"#111c30");
+  mx.fillStyle=g;mx.fillRect(a.x,a.y,a.w,a.h);
+  const h=cam.h||0, offY=cam.offY||0, cx=a.x+a.w/2;
+  mx.save();mx.beginPath();mx.rect(a.x,a.y,a.w,a.h);mx.clip();
+  // 背景隨鏡頭俯仰上下位移(鏡頭上仰 → 背景往下移)= 看得出畫面在上下移動
+  const shift=(cam.aim||0)*a.h*0.30, stepY=a.h*0.16;
+  mx.strokeStyle="rgba(255,255,255,.07)";mx.lineWidth=1;
+  for(let i=-2;i<=8;i++){const gy=a.y+i*stepY+(shift%stepY);
+    mx.beginPath();mx.moveTo(a.x,gy);mx.lineTo(a.x+a.w,gy);mx.stroke();}
+  const deskY=a.y+a.h*0.88+shift;                  // 桌面參考線
+  mx.strokeStyle="rgba(255,255,255,.18)";mx.lineWidth=1.5;
+  mx.beginPath();mx.moveTo(a.x,deskY);mx.lineTo(a.x+a.w,deskY);mx.stroke();
+  mx.fillStyle="rgba(255,255,255,.32)";mx.font="9px "+FONT;mx.textAlign="left";
+  mx.fillText("桌面",a.x+8,deskY-4);
+  // 固定 Preset 取景框(死框,不會動)——站起來就切到頭
+  const fpTop=a.y+a.h*0.34, fpH=a.h*0.58, fpW=a.w*0.42;
+  mx.strokeStyle="rgba(170,182,200,.5)";mx.setLineDash([5,4]);mx.lineWidth=1.5;
+  mx.strokeRect(cx-fpW/2,fpTop,fpW,fpH);mx.setLineDash([]);
+  mx.fillStyle="rgba(170,182,200,.7)";mx.font="9px "+FONT;mx.textAlign="center";
+  mx.fillText("固定 Preset 死框(不會動)",cx,fpTop-5);
+  // 人物:AI 用俯仰+變焦重新取景;轉換瞬間會太大/太小且偏離中心
+  const fh=a.h*(cam.figH!==undefined?cam.figH:(0.56+0.30*h));
+  const cy=a.y+a.h*0.56-offY*a.h*0.20;
+  figure(cx,cy,fh,"#8fe3b6",level>0.15,id);
+  // 固定 Preset 死框會不會切到頭?(頭頂高於死框上緣 = 砍頭)
+  const headTop=cy-fh*0.48;
+  const cut=headTop<fpTop;
+  if(cut){
+    mx.fillStyle="rgba(229,72,77,.28)";                       // 被死框切掉的部分
+    mx.fillRect(cx-fpW/2-6,headTop-4,fpW+12,fpTop-headTop+4);
+    mx.strokeStyle="#e5484d";mx.lineWidth=2;mx.setLineDash([5,3]);
+    mx.beginPath();mx.moveTo(cx-fpW/2-6,fpTop);mx.lineTo(cx+fpW/2+6,fpTop);mx.stroke();mx.setLineDash([]);
+  }
+  const bw=a.w*(0.40+0.08*h);
+  mx.strokeStyle="#22c55e";mx.lineWidth=2.5;
+  mx.strokeRect(cx-bw/2,cy-fh*0.52,bw,fh*0.95);
+  mx.fillStyle="#22c55e";mx.font="bold 9px "+FONT;mx.textAlign="center";
+  mx.fillText("AI 取景框 · 頭腳完整",cx,cy-fh*0.52-5);
+  if(cut){
+    mx.fillStyle="#e5484d";mx.font="bold 10px "+FONT;mx.textAlign="center";
+    mx.fillText("✂ 固定 Preset 會切掉頭部",cx,headTop-10);
+  }
+  mx.restore();
+  // 固定的畫面中心線(水平)
+  mx.strokeStyle="rgba(255,255,255,.32)";mx.setLineDash([4,4]);mx.lineWidth=1;
+  const midY=a.y+a.h*0.56;
+  mx.beginPath();mx.moveTo(a.x+4,midY);mx.lineTo(a.x+a.w-4,midY);mx.stroke();mx.setLineDash([]);
+  mx.fillStyle="rgba(255,255,255,.45)";mx.font="9px "+FONT;mx.textAlign="right";
+  mx.fillText("畫面中心",a.x+a.w-8,midY-4);
+  const zf=cam.figH!==undefined?cam.figH:0.72;
+  if(Math.abs(offY)>0.03||Math.abs(zf-0.72)>0.03){
+    mx.fillStyle="#ffd27a";mx.font="bold 11px "+FONT;mx.textAlign="left";
+    let m=[];
+    if(offY>0.03)m.push("↑ 上移"); else if(offY<-0.03)m.push("↓ 下移");
+    if(zf>0.75)m.push("ZOOM OUT"); else if(zf<0.69)m.push("ZOOM IN");
+    mx.fillText(m.join(" + "),a.x+10,a.y+a.h*0.30);
+  }
+  plate(a,"Lecturer "+id+" · "+(cam.posture==="stand"?"站姿":"坐姿")+"(免 Preset)",level);
+  badge(a,"AI 取景 ×"+(cam.zoom||1).toFixed(2));
+}
+function wideTile(a){
+  const g=mx.createLinearGradient(0,a.y,0,a.y+a.h);g.addColorStop(0,"#22344f");g.addColorStop(1,"#13203a");
+  mx.fillStyle=g;mx.fillRect(a.x,a.y,a.w,a.h);
+  ["A","B","C","T"].forEach((id,i)=>{
+    const cx=a.x+a.w*(0.18+0.21*i), cy=a.y+a.h*0.6;
+    figure(cx,cy,a.h*0.52,id==="T"?"#7fb2f0":"#8fe3b6",false,id);
+  });
+  mx.strokeStyle="rgba(120,140,170,.5)";mx.lineWidth=2;mx.strokeRect(a.x+4,a.y+4,a.w-8,a.h-8);
+  badge(a,"廣角全景");
+}
+
+/* ================= 讀數(真實運算結果) ================= */
+function setM(id,txt,cls){const e=document.getElementById(id);if(!e)return;
+  e.textContent=txt; if(cls!==undefined) e.className="v "+cls;}
+function updateMetrics(st){
+  const cam=st.camera;
+  setM("mPreset",cam.preset||"—");
+  const acc=(st.sound||[]).filter(s=>s.accept);
+  const rej=(st.sound||[]).filter(s=>!s.accept);
+  if(acc.length){
+    const s=acc[0];
+    setM("mSP","("+(s.sx*U2M).toFixed(2)+", "+(s.sy*U2M).toFixed(2)+") m");
+    const d=s.drift;
+    setM("mDrift",d.toFixed(3)+" m",d<0.10?"ok":d<0.30?"warn":"err");
+  }else{ setM("mSP","— 無聲源"); setM("mDrift","—",""); }
+  if(rej.length){
+    const r=rej[0];
+    setM("mJudge",r.noPerson?"非人聲(無人形)→ 拒絕":"區外聲源 → 拒絕","err");
+  }else if(acc.length){ setM("mJudge","人聲 + 人形 → 採信","ok"); }
+  else { setM("mJudge","靜默",""); }
+  setM("mTrack",strip(st.track||"—"),"");
+}
+
+/* ================= 迴圈 ================= */
+function buildSound(st){
+  const out=[];
+  (st.sources||[]).forEach(s=>{
+    let px,py,mh;
+    if(s.id==="NOISE"){px=W.noise.x;py=W.noise.y;mh=NOISE_H;}
+    else if(s.id==="T"){px=st.carrier.x;py=st.carrier.y;mh=spkUnits();}
+    else {const p=W.people[s.id];px=p.x;py=p.y;mh=spkUnits();}
+    if(s.mh!==undefined) mh=s.mh;          // 姿勢覆寫(坐/站)
+    const sp=soundPoint(px,py,mh);
+    out.push({id:s.id,accept:s.accept,reason:s.reason,noPerson:s.id==="NOISE",
+      sx:sp.x,sy:sp.y,tx:px,ty:py,
+      drift:Math.hypot(sp.x-px,sp.y-py)*U2M});
+  });
+  return out;
+}
+function frame(ts){
+  if(playing){const dt=(ts-lastTs)/1000; if(dt<1) clock+=dt*speed;}
+  lastTs=ts;
+  const sc=SC[cur], st=sc.update(clock);
+  st.sound=buildSound(st);
+  drawRoom(st);drawMonitor(st);updateMetrics(st);
+  document.getElementById("phase").innerHTML="<b>"+sc.name+":</b> "+st.phase;
+  document.getElementById("clock").style.width=(((clock%sc.dur)/sc.dur)*100)+"%";
+  requestAnimationFrame(frame);
+}
+
+/* ================= UI ================= */
+const tabsEl=document.getElementById("tabs"), descBody=document.getElementById("descBody");
+function rebuild(){
+  const keys=visibleKeys();
+  if(!keys.includes(String(cur))) { cur=+keys[0]; clock=0; }
+  tabsEl.innerHTML="";
+  const pillOf=s=>s.pill||(s.models.length===1?"200 專屬":"");
+  keys.forEach((k,i)=>{
+    const s=SC[k], d=document.createElement("div"), pl=pillOf(s);
+    d.className="tab"+(+k===cur?" active":"");
+    d.innerHTML='<span class="n">'+(i+1)+'</span>'+s.name+(pl?'<span class="p2">'+pl+'</span>':'');
+    d.onclick=()=>{cur=+k;clock=0;rebuild();};
+    tabsEl.appendChild(d);
+  });
+  descBody.innerHTML="";
+  keys.forEach((k,i)=>{
+    const s=SC[k], tr=document.createElement("tr"), pl=pillOf(s);
+    tr.innerHTML='<td>'+(i+1)+'</td><td><b>'+s.name+'</b>'+(pl?' <span style="color:#6b3fa0">('+pl+')</span>':'')+
+      '</td><td>'+s.fn+'</td><td>'+s.fixture+'</td><td>'+s.effect+'</td>';
+    descBody.appendChild(tr);
+  });
+  document.getElementById("modelNote").textContent = model===200
+    ? keys.length+" 個情境(多「無人位置雜音抗干擾」+「起立坐下 AI 取景」,皆為 200 專屬)"
+    : keys.length+" 個 Demo 情境";
+}
+document.getElementById("modelSeg").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  model=+b.dataset.m;[...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));rebuild();};
+document.getElementById("viewSeg").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  mode=b.dataset.v;[...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
+  document.getElementById("viewBadge").textContent=mode==="2d"?"2D 俯視":"3D 立體";};
+document.getElementById("playBtn").onclick=e=>{playing=!playing;
+  e.target.textContent=playing?"⏸ 暫停":"▶ 播放";e.target.classList.toggle("primary",!playing);};
+document.getElementById("restartBtn").onclick=()=>{clock=0;};
+document.getElementById("spd").onchange=e=>{speed=+e.target.value;};
+document.getElementById("spkH").oninput=e=>{spkHm=+e.target.value;
+  document.getElementById("spkHv").textContent=spkHm.toFixed(2)+" m";};
+
+if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){this.beginPath();this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();return this;};}
+rebuild();
+playing=true;
+document.getElementById("playBtn").textContent="⏸ 暫停";
+document.getElementById("playBtn").classList.remove("primary");
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
